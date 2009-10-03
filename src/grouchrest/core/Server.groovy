@@ -14,34 +14,34 @@ class Server {
         Http.get(hostname)
     }
 
-    def createDatabase(dbname) {
+    // returns a single uuid
+    def getUUID() {
+        def res = Http.get("${hostname}/_uuids")
+        res["uuids"].get(0)
+    }
+
+    def createDatabase(name) {
         try {
-            Http.put("${hostname}/${dbname}")
+            return Http.put("${hostname}/${name}")
         } catch (e) {
-            println "oops"
+            throw new Exception("Error while creating database ${name}")
         }
-        new Database(this, dbname)
     }
 
-    def deleteDatabase(dbname) {
-        Http.delete("${hostname}/${dbname}")
-    }
-
-    // returns ["uuids" : [...]]
-    def getUUID(count = 1) {
-        Http.get("${hostname}/_uuids?count=${count}")
-    }
-
-    def replicate(dbname, toServer) {
-        throw new UnsupportedOperationException("build me")
+    def deleteDatabase(name) {
+        try {
+            return Http.delete("${hostname}/${name}")
+        } catch (e) {
+            throw new Exception("Error while deleting database ${name}")
+        }
     }
 
     static void main(args) {
         def s = new Server()
-        println s.getInfo()
-        s.createDatabase("blech")
-        s.deleteDatabase("blech")
-        println s.getUUID()
+        //println s.getInfo()
+        //s.createDatabase("blech")
+        println s.deleteDatabase("blech")
+        //println s.getUUID()
     }
 	
 }
