@@ -22,8 +22,10 @@ class Server {
 
     def createDatabase(name) {
         try {
-            return Http.put("${hostname}/${name}")
+            Http.put("${hostname}/${name}")
+            return new Database(this, name)
         } catch (e) {
+            e.printStackTrace()
             throw new Exception("Error while creating database ${name}")
         }
     }
@@ -35,13 +37,4 @@ class Server {
             throw new Exception("Error while deleting database ${name}")
         }
     }
-
-    static void main(args) {
-        def s = new Server()
-        //println s.getInfo()
-        //s.createDatabase("blech")
-        println s.deleteDatabase("blech")
-        //println s.getUUID()
-    }
-	
 }

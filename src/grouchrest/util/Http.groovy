@@ -28,14 +28,28 @@ class Http {
         }
     }
 
-    static def put(uri, payload = null) {
+    static def put(uri, payload) {
         try {
             def client = new DefaultHttpClient()
             def put = new HttpPut(uri)
-            if (payload) {
-                def entity = new StringEntity(payload)
-                put.setEntity(entity)
-            }
+            def entity = new StringEntity(payload)
+            put.setEntity(entity)
+            def resp = client.execute(put)
+            def status = resp.getStatusLine()
+            def map = ["reason" : status.getReasonPhrase(),
+                       "code" : status.getStatusCode(),
+                       "protocol" : status.getProtocolVersion()]
+            return map
+        } catch (e) {
+            e.printStackTrace()
+            throw new Exception("Error while sending a PUT request ${uri}")
+        }
+    }
+
+    static def put(uri) {
+        try {
+            def client = new DefaultHttpClient()
+            def put = new HttpPut(uri)
             def resp = client.execute(put)
             def status = resp.getStatusLine()
             def map = ["reason" : status.getReasonPhrase(),
@@ -60,6 +74,32 @@ class Http {
         } catch (e) {
             throw new Exception("Error while sending a DELETE request ${uri}")
         }
+    }
+
+    static def post(uri, payload) {
+        try {
+            def client = new DefaultHttpClient()
+            def put = new HttpPost(uri)
+            def entity = new StringEntity(payload)
+            put.setEntity(entity)
+            def resp = client.execute(put)
+            def respEntity = resp.getEntity()
+            def status = resp.getStatusLine()
+            def map = ["reason" : status.getReasonPhrase(),
+                       "code" : status.getStatusCode(),
+                       "protocol" : status.getProtocolVersion(),
+                       "payload" : new JSONObject(respEntity.getContent().text)]
+            return map
+        } catch (e) {
+            throw new Exception("Error while sending a POST request ${uri}")
+        }
+    }
+
+    static void main(args) {
+        def d = [:]
+        d["map"] = "function(doc) { if (doc.title) emit(doc.title, null); }"
+        def doc = new JSONObject(d).toString()
+        println Http.post("http://127.0.0.1:5984/nblog_development/_temp_view", doc)
     }
 
 }
