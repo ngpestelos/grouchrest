@@ -79,7 +79,7 @@ class Database {
 
         def res
         if (keys)
-            res = HttpClient.post(url, ["keys" : keys])
+            res = HttpClient.post(url, getJSONObject(["keys" : keys]).toString())
         else
             res = HttpClient.get(url)
 

@@ -131,3 +131,76 @@ scenario "saving a view", {
     db.get("_design/test")["views"].shouldBe view
   }
 }
+
+scenario "select from an existing view", {
+  given "a view", {
+    println "select from an existing view"
+
+    view = [
+      "test" : ["map" : """function(doc) {
+                             for (var w in doc) {
+                               if (!w.match(/^_/))
+                                 emit(w, doc[w]);
+                             }
+                           }"""]
+    ]
+    doc = [
+      "_id" : "_design/first",
+      "views" : view
+    ]
+
+    db.save(doc)
+  }
+
+  given "some documents", {
+    db.bulkSave([
+      ["wild" : "and random"],
+      ["mild" : "yet local"],
+      ["another" : ["set", "of", "keys"]]
+    ])
+  }
+
+  then "it should have the view", {
+    println "it should have the view"
+
+    fun = db.get("_design/first")["views"]["test"]["map"]
+    def buf = new StringBuffer("for (var w in doc)")
+    fun.contains(buf).shouldBe true
+  }
+
+  then "it should list from the view", {
+    println "it should list from the view"
+
+    res = db.view("first/test")
+    sub = res["rows"].findAll { r -> r["key"] == "wild" && r["value"] == "and random" }
+    sub.size().shouldBe 1
+  }
+
+  then "it should work with a range", {
+    println "it should work with a range"
+
+    res = db.view("first/test", ["startkey" : "b", "endkey" : "z"])
+    res["rows"].size().shouldBe 2
+  }
+
+  then "it should work with a key", {
+    println "it should work with a key"
+
+    res = db.view("first/test", ["key" : "wild"])
+    res["rows"].size().shouldBe 1
+  }
+
+  then "it should work with a limit", {
+    println "it should work with a limit"
+
+    res = db.view("first/test", ["limit" : 1])
+    res["rows"].size().shouldBe 1
+  }
+
+  then "it should work with multi-keys", {
+    println "it should work with multi-keys"
+
+    res = db.view("first/test", ["keys" : ["another", "wild"]])
+    res["rows"].size().shouldBe 2
+  }
+}
