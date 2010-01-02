@@ -293,3 +293,28 @@ scenario "new document with id", {
   }
 
 }
+
+scenario "PUT (existing document with rev)", {
+
+  given "a document", {
+    println "PUT (existing document with rev)"
+    db.save(["_id" : "my-doc", "will-exist" : "here"])
+  }
+
+  then "it should fail to resave without the rev", {
+    println "it should fail to resave without the rev"
+    doc = db.get("my-doc")
+    doc["song"] = "Magic Carpet Ride"
+    doc.remove("_rev")
+    ensureThrows(Exception) { db.save(doc) }
+  }
+
+  then "it should update the document", {
+    println "it should update the document"
+    doc = db.get("my-doc")
+    doc["song"] = "Magic Carpet Ride"
+    res = db.save(doc)
+    now = db.get("my-doc")
+    now["song"].shouldBe "Magic Carpet Ride"
+  }
+}
