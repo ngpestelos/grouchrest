@@ -80,3 +80,26 @@ scenario "map query with _temp_view in Javascript", {
     res["rows"].size().shouldBe 2
   }
 }
+
+scenario "map/reduce query with _temp_view in Javascript", {
+  given "some data", {
+    println "map/reduce query with with _temp_view"
+ 
+    db.bulkSave([
+      ["beverage" : "bourbon", "count" : 1],
+      ["beverage" : "scotch", "count" : 1],
+      ["beverage" : "beer", "count" : 1],
+      ["beverage" : "beer", "count" : 1]
+    ])
+  }
+
+  then "it should return the result of the temp function", {
+    println "it should return the result of the temp function"
+
+    res = db.tempView(["map" :
+      "function(doc) { emit(doc.beverage, doc.count) }",
+      "reduce" : "function(beverage, counts) { return sum(counts) }"])
+    rows = res["rows"]
+    rows[0]["value"].shouldBe 4
+  }
+}
