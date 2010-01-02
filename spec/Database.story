@@ -224,4 +224,35 @@ scenario "GET (document by id) when the doc exists", {
 
     db.save(["_id" : docid, "will-exist" : "here"])
   }
+
+  then "it should get the document", {
+    println "it should get the document"
+
+    doc = db.get(res["id"])
+    doc["lemons"].shouldBe "from texas"
+  }
+
+  then "it should work with a funky id", {
+    println "it should work with a funky id"
+
+    db.get(docid)["will-exist"].shouldBe "here"
+  }
+}
+
+scenario "POST (adding bulk documents)", {
+
+  given "some documents", {
+    println "POST (adding bulk documents)"
+    res = db.bulkSave([
+      ["wild" : "and random"],
+      ["mild" : "yet local"],
+      ["another" : ["set","of","keys"]]
+    ])
+  }
+
+  then "it should add them without ids", {
+    println "it should add them without ids"
+    res.each { r -> db.get(r["id"])["_rev"].shouldBe r["rev"] }
+  }
+
 }
