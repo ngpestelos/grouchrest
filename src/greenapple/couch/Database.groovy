@@ -30,6 +30,10 @@ class Database {
         uri
     }
 
+    def getInfo() {
+        HttpClient.get(getURI())
+    }
+
     // Use with caution
     def delete() {
         HttpClient.delete("${uri}")

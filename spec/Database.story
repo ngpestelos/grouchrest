@@ -18,3 +18,9 @@ scenario "database name including slash", {
     db.getURI().shouldBe "http://127.0.0.1:5984/foo%2Fbar"
   }
 }
+
+scenario "get info", {
+  then "it should get a response from the database", {
+    db.getInfo().shouldNotBe null
+  }
+}
