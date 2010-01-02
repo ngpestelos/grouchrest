@@ -26,6 +26,10 @@ class Database {
         this.uri = "${host}/${name.replaceAll("/", "%2F")}"
     }
 
+    def getURI() {
+        uri
+    }
+
     // Use with caution
     def delete() {
         HttpClient.delete("${uri}")
