@@ -103,3 +103,31 @@ scenario "map/reduce query with _temp_view in Javascript", {
     rows[0]["value"].shouldBe 4
   }
 }
+
+scenario "saving a view", {
+  given "a design doc", {
+    println "saving a view"
+
+    // I'm getting backslash escape errors
+    view = ["test" :
+      ["map" : """function(doc) {
+                    if (doc.word && !/[^a-zA-Z0-9_]/.test(doc.word))
+                      emit(doc.word, null);
+                  }"""]
+    ]
+
+    doc = ["_id" : "_design/test", "views" : view]
+    db.save(doc)
+  }
+
+  then "it should work properly", {
+    println "it should work properly"
+    db.bulkSave([["word" : "once"], ["word" : "and again"]])
+    db.view("test/test")["total_rows"].shouldBe 1
+  }
+
+  then "it should round trip", {
+    println "it should round trip"
+    db.get("_design/test")["views"].shouldBe view
+  }
+}

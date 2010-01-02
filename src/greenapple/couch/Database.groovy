@@ -58,6 +58,38 @@ class Database {
         def res = HttpClient.post(url, getJSONObject(view).toString())
         getMap(res)
     }
+
+    Map save(Map doc) {
+        if (!doc)
+            throw new IllegalArgumentException("Document is required.")
+
+        def json = getJSONObject(doc)
+        def id = json.has("_id") ? json.get("_id") : getUUID()
+        def res = HttpClient.put("${getURI()}/${id}", json.toString())
+        getMap(res)
+    }
+
+    Map view(name, params = [:]) {
+        def keys = params.remove("keys")
+
+        name = name.split("/")
+        def dname = name[0]
+        def vname = name[1]
+        def url = paramify("${getURI()}/_design/${dname}/_view/${vname}", params)
+
+        def res
+        if (keys)
+            res = HttpClient.post(url, ["keys" : keys])
+        else
+            res = HttpClient.get(url)
+
+        getMap(res)
+    }
+
+    Map get(String id) {
+        def res = HttpClient.get("${getURI()}/${id}")
+        getMap(res)
+    }
 	
 }
 
