@@ -91,7 +91,11 @@ class CouchUtils {
     }    
 
     private static def getList(JSONArray json) {
+        if (json.length() == 0)
+            return []
+        
         def list = []
+
         0.upto(json.length() - 1) {
             def element = json.get(it)
 

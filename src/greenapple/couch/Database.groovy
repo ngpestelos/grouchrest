@@ -96,6 +96,11 @@ class Database {
         getMap(res)
     }
 
+    def getDocuments() {
+        def res = HttpClient.get("${getURI()}/_all_docs")        
+        getMap(res)
+    }
+
     ////
     //// private methods
     ////

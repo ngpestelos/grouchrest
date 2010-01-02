@@ -256,3 +256,25 @@ scenario "POST (adding bulk documents)", {
   }
 
 }
+
+scenario "new document without an id", {
+
+  given "an empty database", {
+    println "new document without an id"
+    res = db.getDocuments()
+    assert (res["total_rows"] == 0)
+  }
+
+  then "it should create the document and return the id", {
+    println "it should create the document and return the id"
+    res = db.save(["lemons" : "from texas", "and" : "spain"])
+    res2 = db.get(res["id"])
+    res2["lemons"].shouldBe "from texas"
+  }
+
+  then "it should use PUT with UUIDs", {
+    println "it should use PUT with UUIDs"
+    res = db.save(["just" : "another document"])
+    res["id"].shouldNotBe null
+  }
+}
