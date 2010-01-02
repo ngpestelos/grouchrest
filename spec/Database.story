@@ -318,3 +318,16 @@ scenario "PUT (existing document with rev)", {
     now["song"].shouldBe "Magic Carpet Ride"
   }
 }
+
+scenario "DELETE existing document", {
+  given "a document", {
+    println "DELETE existing document"
+    res = db.save(["lemons" : "from texas", "and" : "spain"])
+  }
+
+  then "it should delete a document", {
+    doc = db.get(res["id"])
+    db.deleteDoc(doc)
+    ensureThrows(Exception) { db.get(res["id"]) }
+  }
+}
