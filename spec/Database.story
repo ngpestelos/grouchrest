@@ -278,3 +278,18 @@ scenario "new document without an id", {
     res["id"].shouldNotBe null
   }
 }
+
+scenario "new document with id", {
+
+  given "an empty database", {
+    println "new document with id"
+    res = db.getDocuments()
+    assert (res["total_rows"] == 0)
+  }
+
+  then "it should create the document", {
+    res = db.save(["_id" : "my-doc", "will-exist" : "here"]) 
+    db.get("my-doc")["will-exist"].shouldBe "here"
+  }
+
+}
