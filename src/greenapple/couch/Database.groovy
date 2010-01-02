@@ -95,6 +95,15 @@ class Database {
         def res = HttpClient.get("${getURI()}/${id}")
         getMap(res)
     }
+
+    ////
+    //// private methods
+    ////
+
+    private def getUUID() {
+        def res = HttpClient.get("${host}/_uuids")
+        getMap(res)["uuids"][0]
+    }
 	
 }
 

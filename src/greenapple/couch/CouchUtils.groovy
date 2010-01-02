@@ -37,7 +37,7 @@ class CouchUtils {
         if (!params)
             return url
 
-        println "params ${params}"
+        //println "params ${params}"
 
         def query = params.collect { k, v ->
             if (k == "id")

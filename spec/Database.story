@@ -214,3 +214,14 @@ scenario "select from an existing view", {
     res["total_rows"].shouldBe 3
   }
 }
+
+scenario "GET (document by id) when the doc exists", {
+  given "a document", {
+    println "GET (document by id) when the doc exists"
+
+    res = db.save(["lemons" : "from texas", "and" : "spain"])
+    docid = "http://example.com/stuff.cgi?things=and%20stuff"
+
+    db.save(["_id" : docid, "will-exist" : "here"])
+  }
+}
