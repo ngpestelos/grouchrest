@@ -38,6 +38,26 @@ class Database {
     def delete() {
         HttpClient.delete("${uri}")
     }
+
+    List bulkSave(Map doc) {
+        bulkSave([doc])
+    }
+
+    List bulkSave(List array) {
+        def docs = getJSONObject(["docs" : array]).toString()
+        def res = HttpClient.post("${getURI()}/_bulk_docs", docs)
+        getList(res)
+    }
+
+    Map tempView(view, params = [:]) {
+        def keys = params.remove("keys")
+        if (keys)
+            view = view.plus(["keys" : keys])
+
+        def url = paramify("${getURI()}/_temp_view", params)
+        def res = HttpClient.post(url, getJSONObject(view).toString())
+        getMap(res)
+    }
 	
 }
 

@@ -32,16 +32,20 @@ class Server {
         defineAvailableDatabase(DEFAULT, name)
     }
 
-    ////
-    //// Private methods
-    ////
+    def getDefaultDatabase() {
+        availableDatabases[DEFAULT]
+    }
 
-    private def createDatabase(name) {
-        try { 
+    def createDatabase(name) {
+        try {
             HttpClient.put("${uri}/${name}")
         } catch (e) { }
         new Database(this, name)
     }
+
+    ////
+    //// Private methods
+    ////    
 
     private def getDatabase(name) {
         new Database(this, name)
