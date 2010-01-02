@@ -320,14 +320,23 @@ scenario "PUT (existing document with rev)", {
 }
 
 scenario "DELETE existing document", {
-  given "a document", {
+  given "DELETE existing document", {
     println "DELETE existing document"
-    res = db.save(["lemons" : "from texas", "and" : "spain"])
   }
 
   then "it should delete a document", {
+    println "it should delete a document"
+    res = db.save(["lemons" : "from texas", "and" : "spain"])
     doc = db.get(res["id"])
     db.deleteDoc(doc)
     ensureThrows(Exception) { db.get(res["id"]) }
+  }
+
+  then "it should fail without an _id", {
+    println "it should fail without an _id"
+    res = db.save(["lemons" : "from texas", "and" : "spain"])
+    doc = db.get(res["id"])
+    doc.remove("_id")
+    ensureThrows(Exception) { db.deleteDoc(doc) }
   }
 }
