@@ -203,4 +203,14 @@ scenario "select from an existing view", {
     res = db.view("first/test", ["keys" : ["another", "wild"]])
     res["rows"].size().shouldBe 2
   }
+
+  then "it should accept a block", {
+    rows = []
+    res = db.view("first/test", ["include_docs" : true]) { row ->
+      rows << row["doc"]
+    }
+
+    rows.size().shouldBe 3
+    res["total_rows"].shouldBe 3
+  }
 }

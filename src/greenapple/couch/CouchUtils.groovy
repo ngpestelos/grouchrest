@@ -36,7 +36,9 @@ class CouchUtils {
     static def paramifyURL(url, params = [:]) {
         if (!params)
             return url
-        
+
+        println "params ${params}"
+
         def query = params.collect { k, v ->
             if (k == "id")
                 return k
@@ -46,11 +48,11 @@ class CouchUtils {
                 if (v instanceof String) {
                     def qv = "\"${v}\""
                     return "${k}=${codec.encode(qv)}"
-                } else if (v instanceof Integer) {
+                } else if (v instanceof Number || v instanceof Boolean) {
                     return "${k}=${v}"
                 } else
                     return "${k}=${codec.encode(getJSONObject(v).toString())}"
-            } else if (k in ["limit", "skip"]) {
+            } else if (k in ["limit", "skip", "include_docs"]) {
                 return "${k}=${v}"
             }
             else

@@ -69,7 +69,7 @@ class Database {
         getMap(res)
     }
 
-    Map view(name, params = [:]) {
+    Map view(name, params = [:], closure = null) {
         def keys = params.remove("keys")
 
         name = name.split("/")
@@ -83,7 +83,12 @@ class Database {
         else
             res = HttpClient.get(url)
 
-        getMap(res)
+        def map = getMap(res)
+
+        if (closure)
+            map["rows"].each { row -> closure(row) }
+
+        return map
     }
 
     Map get(String id) {
