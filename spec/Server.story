@@ -1,3 +1,4 @@
+import greenapple.couch.HttpClient
 import greenapple.couch.Server
 
 before "setup local server", {
@@ -5,12 +6,11 @@ before "setup local server", {
 }
 
 after_each "", {
-  couch.getAvailableDatabases().each { k, db ->
-    db.delete()
-  }
+  try { HttpClient.delete("http://127.0.0.1:5984/grouch-server-test-db") } catch (e) { }
+  try { HttpClient.delete("http://127.0.0.1:5984/grouch-server-default-db") } catch (e) { }
 }
 
-scenario "available databases", {
+scenario "add databases", {
 
   then "it should let you add more databases", {
     couch.getAvailableDatabases().shouldBeEmpty
@@ -18,15 +18,21 @@ scenario "available databases", {
     couch.getAvailableDatabases()[Server.DEFAULT].shouldNotBe null
   }
 
+}
+
+scenario "verify database", {
+
   then "it should verify that a database is available", {
     couch.defineAvailableDatabase(Server.DEFAULT, "grouch-server-test-db")
     couch.availableDatabase(Server.DEFAULT).shouldBe true
     couch.availableDatabase("foo").shouldBe false
   }
 
-  then "it should let you set a default database", {
+}
+
+scenario "default database", {
+  then "it should set a default database", { 
     couch.setDefaultDatabase("grouch-server-default-db")
     couch.availableDatabase(Server.DEFAULT).shouldBe true
   }
-
 }

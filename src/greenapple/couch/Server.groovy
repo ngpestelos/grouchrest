@@ -36,12 +36,11 @@ class Server {
         availableDatabases[DEFAULT]
     }
 
-    def createDatabase(name) {
-        try {
-            HttpClient.put("${uri}/${name}")
-        } catch (e) { }
+    def createDatabase(name) {        
+        //println "createDatabase ${uri}/${name}"
+        HttpClient.put("${uri}/${name}")
         new Database(this, name)
-    }
+    }    
 
     ////
     //// Private methods
