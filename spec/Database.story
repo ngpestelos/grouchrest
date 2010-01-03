@@ -1,22 +1,17 @@
 import greenapple.couch.Database
 import greenapple.couch.Server
+import greenapple.couch.HttpClient
 
-before "setup server", {
-  TESTDB = "db_12345"
+before_each "clear existing database", {
+  try { HttpClient.delete("http://127.0.0.1:5984/test_12345") } catch (e) { }
+  HttpClient.put("http://127.0.0.1:5984/test_12345")
   server = new Server()
-}
-
-before_each "create", {
-  db = server.createDatabase(TESTDB)
-}
-
-after_each "nuke", {
-  try { db.delete() } catch(e) { }
+  db = server.defineAvailableDatabase("test", "test_12345", false)
 }
 
 scenario "database name including slash", {
   then "it should escape the name in the URI", {
-    db = server.getDatabase("foo/bar")
+    db = new Server().getDatabase("foo/bar")
     db.getName().shouldBe "foo/bar"
     db.getURI().shouldBe "http://127.0.0.1:5984/foo%2Fbar"
   }
