@@ -30,6 +30,19 @@ scenario "push using subclass", {
   }
 
   then "it should save its design document", {  
-    println foo.push()
+    res = foo.push()
+    res["ok"].shouldBe true
+  }
+}
+
+scenario "update design doc", {
+  given "a design doc", {
+    db.save(["_id" : "_design/foo"])
+    foo = new FooDesign(db)  
+  }
+
+  then "it should save", {
+    res = foo.push()
+    res["rev"][0].shouldBe "2"
   }
 }
