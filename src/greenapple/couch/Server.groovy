@@ -40,7 +40,11 @@ class Server {
         //println "createDatabase ${uri}/${name}"
         HttpClient.put("${uri}/${name}")
         new Database(this, name)
-    }    
+    }
+
+    def getInfo() {
+        HttpClient.get("${uri}")        
+    }
 
     ////
     //// Private methods

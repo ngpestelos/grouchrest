@@ -36,3 +36,9 @@ scenario "default database", {
     couch.availableDatabase(Server.DEFAULT).shouldBe true
   }
 }
+
+scenario "get info", {
+  then "it should return something", {
+    couch.getInfo().shouldNotBe null
+  }
+}
