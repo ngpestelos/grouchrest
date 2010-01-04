@@ -23,7 +23,7 @@ class PropertyList {
             _attributes.remove(key)
     }    
 
-    protected def attributes() {
+    protected def getAttributes() {
         _attributes
     }
 
