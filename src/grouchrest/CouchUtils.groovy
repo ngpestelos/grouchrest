@@ -1,4 +1,4 @@
-package greenapple.couch
+package grouchrest
 
 import org.apache.commons.codec.net.URLCodec
 

@@ -1,4 +1,4 @@
-package greenapple.couch
+package grouchrest
 
 class Server {
 

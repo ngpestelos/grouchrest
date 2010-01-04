@@ -1,6 +1,4 @@
-import greenapple.couch.Database
-import greenapple.couch.Server
-import greenapple.couch.HttpClient
+import grouchrest.*
 
 before_each "clear existing database", {
   try { HttpClient.delete("http://127.0.0.1:5984/test_12345") } catch (e) { }

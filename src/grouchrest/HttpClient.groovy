@@ -1,4 +1,4 @@
-package greenapple.couch
+package grouchrest
 
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.time.StopWatch

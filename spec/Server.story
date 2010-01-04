@@ -1,5 +1,4 @@
-import greenapple.couch.HttpClient
-import greenapple.couch.Server
+import grouchrest.*
 
 before "setup local server", {
   couch = new Server()
