@@ -4,6 +4,7 @@ import org.apache.commons.codec.net.URLCodec
 
 import org.json.JSONArray
 import org.json.JSONObject
+import org.codehaus.groovy.runtime.GStringImpl
 
 // See couchrest.rb
 class CouchUtils {
@@ -15,7 +16,7 @@ class CouchUtils {
             def json = new JSONObject()
             o.each { key, value -> json.put(key, getJSONObject(value)) }
             return json
-        } else if (o instanceof Boolean || o instanceof Number || o instanceof String) {
+        } else if (o instanceof Boolean || o instanceof Number || o instanceof String || o instanceof GStringImpl ) {
             return o
         } else if (o instanceof List) {
             return getJSONArray(o)
