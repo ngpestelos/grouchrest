@@ -71,4 +71,7 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-javadoc-build">
+      <echo>Skipping javadoc build</echo>
+    </target>
 </project>
