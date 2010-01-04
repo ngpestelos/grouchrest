@@ -25,9 +25,11 @@ class Document extends PropertyList {
             throw new IllegalStateException("database required for saving")
 
         def res = database.save(getAttributes())
-        put("_id", res["id"])
-        put("_rev", res["rev"])
-        res["ok"]
+        if (res["ok"]) {
+            put("_id", res["id"])
+            put("_rev", res["rev"])
+            return res["ok"]
+        }
     }
 	
 }
