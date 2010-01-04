@@ -73,5 +73,7 @@ scenario "save", {
 
   then "it should save", {
     doc.save().shouldBe true
+    doc.id.shouldNotBe null
+    doc.rev.shouldNotBe null
   }
 }
