@@ -74,6 +74,8 @@ class CouchUtils {
     }    
 
     private static def getMap(JSONObject json) {
+        //println "getMap ${json}"
+
         def map = [:]
 
         json.keys().each { k ->
@@ -85,6 +87,8 @@ class CouchUtils {
             else
                 map[k] = value
         }
+
+        //println "returning ${map}"
 
         return map
     }    
@@ -98,12 +102,15 @@ class CouchUtils {
         0.upto(json.length() - 1) {
             def element = json.get(it)
 
-            if (it instanceof JSONObject)
+            //println "processing ${element}"
+            
+            if (element instanceof JSONObject)
                 list << getMap(element)
-            else if (it instanceof JSONArray)
+            else if (element instanceof JSONArray)
                 list << getList(element)
             else
                 list << element
+
         }
 
         return list
