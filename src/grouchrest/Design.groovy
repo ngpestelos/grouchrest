@@ -11,13 +11,9 @@ class Design extends Document {
             id.replace('_design/', '')
     }
 
-    def viewBy(keys) {
+    def viewBy(keys, opts = [:]) {
         if (keys instanceof String)
-            keys = [keys]
-
-        def opts = [:]
-        if (keys.last() instanceof Map)
-            opts = keys.pop()
+            keys = [keys]        
         
         if (!has("views")) put("views", [:])
 
@@ -44,7 +40,9 @@ class Design extends Document {
             views[methodName] = ["map" : mapFunction()]
             put("views", views)
         }
-
+        if (opts)
+            views[methodName]["grouchrest-defaults"] = opts
+        
         return methodName
     }
 
@@ -55,7 +53,9 @@ class Design extends Document {
 
     def viewOn(Database db, String viewName, query = [:], closure = null) {
         def viewSlug = "${name}/${viewName}"
-        db.view(viewSlug, query, closure)
+        def defaults = (get("views")[viewName] && get("views")[viewName]["grouchrest-defaults"]) ? 
+            get("views")[viewName]["grouchrest-defaults"] : [:]
+        db.view(viewSlug, defaults.plus(query), closure)
     }
 
     def save() {

@@ -80,3 +80,31 @@ scenario "save and view", {
     res["rows"][0]["key"].shouldBe "x"
   }
 }
+
+scenario "a view with default options", {
+  given "some documents", {
+    db = resetTestDatabase()
+    des = new Design()
+    opts = ["descending" : true]
+    des.name = "test"
+    des.viewBy("name", opts)
+    des.database = db
+    des.save()
+    db.bulkSave([["name" : "a"], ["name" : "z"]])
+  }
+
+  then "it should save them", {
+    doc = db.get(des.id)
+    doc.get("views")["by_name"]["grouchrest-defaults"].shouldBe (["descending" : true])
+  }
+
+  then "it should use them", {
+    res = des.view("by_name")
+    res["rows"].first()["key"].shouldBe "z"
+  }
+
+  then "it should override them", {
+    res = des.view("by_name", ["descending" : false])
+    res["rows"].first()["key"].shouldBe "a"
+  }
+}
