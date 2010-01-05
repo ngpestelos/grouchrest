@@ -123,6 +123,6 @@ scenario "a view with multiple keys", {
   then "it should work", {
     res = des.view("by_name_and_age")
     key = res["rows"].first()["key"]
-    key.size().shouldBe 2
+    key.shouldBe (["a", 2])
   }
 }
