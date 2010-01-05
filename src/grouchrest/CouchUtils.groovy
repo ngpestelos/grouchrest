@@ -38,12 +38,14 @@ class CouchUtils {
         if (!params)
             return url
 
-        //println "params ${params}"
+        //println "params ${params}"        
 
         def query = params.collect { k, v ->
             if (k == "id")
                 return k
-            else if (k in ["key", "startkey", "endkey"]) {
+            else if (k in ["limit", "skip", "include_docs"])
+                return "${k}=${v}"
+            else {
                 // Hack: Strings literally need to be quoted
                 // Hack: Integers cannot be URL encoded
                 if (v instanceof String) {
@@ -53,11 +55,7 @@ class CouchUtils {
                     return "${k}=${v}"
                 } else
                     return "${k}=${codec.encode(getJSONObject(v).toString())}"
-            } else if (k in ["limit", "skip", "include_docs"]) {
-                return "${k}=${v}"
             }
-            else
-                return "${k}=${codec.encode(v)}"
         }.join("&")
 
         "${url}?${query}"
