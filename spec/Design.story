@@ -108,3 +108,21 @@ scenario "a view with default options", {
     res["rows"].first()["key"].shouldBe "a"
   }
 }
+
+scenario "a view with multiple keys", {
+  given "some documents", {
+    db = resetTestDatabase()
+    des = new Design()
+    des.name = "test"
+    des.viewBy (["name", "age"])
+    des.database = db
+    des.save()
+    db.bulkSave([["name" : "a", "age" : 2], ["name" : "a", "age" : 4], ["name" : "z", "age" : 9]])
+  }
+
+  then "it should work", {
+    res = des.view("by_name_and_age")
+    key = res["rows"].first()["key"]
+    key.size().shouldBe 2
+  }
+}
