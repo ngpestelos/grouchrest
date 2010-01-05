@@ -24,7 +24,12 @@ class Design extends Document {
         put("views", views)
         
         if (opts["map"]) {
-            
+            def view = [:]
+            view["map"] = opts.remove("map")
+            if (opts["reduce"])
+                view["reduce"] = opts.remove("reduce")
+
+            views[methodName] = view
         } else {
             def docKeys = keys.collect { k -> "doc['${k}']"}
             def keyEmit = (docKeys.size() == 1) ? "${docKeys.first()}" : "[${docKeys.join(", ")}]"
@@ -48,6 +53,9 @@ class Design extends Document {
 
     // dispatch to a named view
     def view(String viewName, query = [:], closure = null) {
+        if (!database)
+            throw new IllegalStateException("_design docs require a database")
+
         viewOn database, viewName, query, closure
     }
 

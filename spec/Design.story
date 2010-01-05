@@ -126,3 +126,31 @@ scenario "a view with multiple keys", {
     key.shouldBe (["a", 2])
   }
 }
+
+scenario "custom mapreduce", {
+  given "a design document", {
+    db = resetTestDatabase()
+    des = new Design()
+    des.name = "test"
+    mapFun = { "function(doc) { if (doc.word) emit (doc.word, doc.count); }" }
+    reduceFun = { "function(keys, values) { return sum(values); }" }
+    des.viewBy("word", ["map" : mapFun(), "reduce" : reduceFun()])
+    des.database = db
+    des.save()
+  }
+
+  given "some documents", {
+    db.bulkSave([
+      ["word" : "a", "count" : 1],
+      ["word" : "b", "count" : 2],
+      ["word" : "c", "count" : 3],
+      ["word" : "a", "count" : 1]
+    ])
+  }
+
+  then "it should return the total", {
+    res = des.view("by_word", ["group" : true])
+    res["rows"][0]["key"].shouldBe "a"
+    res["rows"][0]["value"].shouldBe 2
+  }
+}
