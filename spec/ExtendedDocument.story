@@ -5,17 +5,14 @@ before "setup the database", {
   HttpClient.put("http://127.0.0.1:5984/student_test")
 }
 
+// can a superclass infer which subclass is in context?
+// can a superclass access static properties of its subclass?
 class Student extends ExtendedDocument {
   static def DB = "student_test"  
 
   static {
     println "In static block"
     viewBy(Student.class, "lastname")
-    /*def design = new Design()
-    design.database = new Server().getDatabase(DB)
-    design.name = DB
-    design.viewBy("lastname")
-    design.save()*/
   }
 
   def Student() {

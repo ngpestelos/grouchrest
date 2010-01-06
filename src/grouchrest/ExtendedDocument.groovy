@@ -9,6 +9,8 @@ class ExtendedDocument extends Document {
     protected ExtendedDocument(Class clazz) {
         println "In super: ${clazz.getName()}"
 
+        //println "${this.metaClass.getSubclassMetaMethods("foo")}"
+
         if (!clazz.metaClass.hasMetaProperty("DB"))
             throw new IllegalStateException("Could not find static property 'DB'.")         
 
