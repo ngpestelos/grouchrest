@@ -5,49 +5,44 @@ class ExtendedDocument extends Document {
 
     protected def design
 
-    protected ExtendedDocument(DB) {
-        def database = new Server().getDatabase(DB)
+    // Expects a "DB" static property from the subclass
+    protected ExtendedDocument(Class clazz) {
+        //println "In super: ${clazz.getName()}"
+
+        if (!clazz.metaClass.hasMetaProperty("DB"))
+            throw new IllegalStateException("Could not find static property 'DB'.")        
+        
+        def database = new Server().getDatabase(clazz."DB")
         useDatabase(database)
         design = new Design(database.get("_design/${DB}"))
         design.name = DB
-    }    
+        design.database = database
 
-    // Copied from "Dynamic finders in Grails"
-    protected static def setupDynamicFinders(Class clazz) {
-        // TODO Cache (but where to put it?)
+        setupFinders(clazz, design)
+    }
+
+    private static def setupFinders(Class clazz, design) {
+        //println "Attach class methods to ${clazz.getName()}"
+
         def mc = clazz.metaClass
-
-        if (!mc.hasMetaProperty("DB"))
-            throw new IllegalStateException("Could not find static property 'DB'.")
-
-        def db = new Server().getDatabase(clazz."DB")
-        def design = new Design()
-        design.database = db
-        design.name = clazz."DB"
-
         mc.'static'.methodMissing = { String name, args ->
             def m = name =~ /by(\w+)/
 
+            if (m.size() == 0)
+                throw new MissingMethodException(name, clazz, args)
+
             def property = m[0][1].toLowerCase()
-            println property
-            println args
-            //design.view(property)
+            if (!design.get("views")["by_${property}"])
+                throw new MissingMethodException(name, clazz, args)
 
-            /*println m[0].size()
-            println "${name}"
-            println "${m[0][1]}"
-            println clazz."DB"
-            println mc.hasMetaProperty("DB")*/
-            //method = ?
-
-            /*
-            mc.'static'."${name}" = { List varArgs ->
-                method.invoke(clazz, methodName, varArgs)
-            }
-
-            result = method.invoke(clazz, methodName, varArgs)*/
-        }
-    }
+            if (args.size() == 0)
+                design.view("by_${property}")
+            else if (args.size() == 1 && args[0] instanceof Map)
+                design.view("by_${property}", args[0])
+            else
+                throw new MissingMethodException(name, clazz, args)
+        }        
+    }    
 	
 }
 
