@@ -1,6 +1,12 @@
 package grouchrest
 
-class Design extends Document {    
+class Design extends Document {
+
+    def Design() { }
+
+    def Design(Map props) {
+        props.each { k, v -> put(k, v) }
+    }
 
     def setName(name) {
         put("_id", "_design/${name}")

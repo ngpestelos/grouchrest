@@ -1,31 +1,45 @@
 import grouchrest.*
 
+before_each "database", {
+  try { HttpClient.delete("http://127.0.0.1:5984/student_test") } catch (e) { }
+  HttpClient.put("http://127.0.0.1:5984/student_test")
+}
+
 class Student extends ExtendedDocument {
-  
+  static def DB = "student_test"  
+
+  static {
+    def design = new Design()
+    design.database = new Server().getDatabase(DB)
+    design.name = DB
+    design.viewBy("lastname")
+    design.save()
+    ExtendedDocument.setupDynamicFinders(Student.class)
+  }
+
   def Student() {
-    super(Student.class)
-    useDatabase (new Server().getDatabase("student_test"))
+    super(DB)
   }
 
 }
 
-class Teacher extends ExtendedDocument {
-
-  def Teacher() {
-    super(Teacher.class)
-    useDatabase (new Server().getDatabase("teacher_test"))
+scenario "setup", {
+  given "a student", {
+    student = new Student()
   }
 
+  then "it should have a default database", {
+    student.database.name.shouldBe "student_test"
+  }
+
+  then "it should have a design document", {
+    student.design.name.shouldBe "student_test"
+    student.design.has("views").shouldBe true
+  }
 }
 
-scenario "use database", {
-  given "a student and a teacher", {
-    s = new Student()
-    t = new Teacher()
-  }  
-
-  then "it should use different databases", {
-    s.database.name.shouldBe "student_test"
-    //t.database.name.shouldBe "teacher_test"
+scenario "dynamic finder", {
+  then "it should find by lastname", {
+    Student.byLastname()
   }
 }
