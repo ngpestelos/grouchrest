@@ -10,11 +10,12 @@ class Student extends ExtendedDocument {
 
   static {
     println "In static block"
-    def design = new Design()
+    viewBy(Student.class, "lastname")
+    /*def design = new Design()
     design.database = new Server().getDatabase(DB)
     design.name = DB
     design.viewBy("lastname")
-    design.save()
+    design.save()*/
   }
 
   def Student() {
@@ -25,7 +26,9 @@ class Student extends ExtendedDocument {
 
 scenario "setup", {
   given "a student", {
-    student = new Student()
+    try {
+      student = new Student()
+    } catch (e) { e.printStackTrace() }
   }
 
   then "it should have a default database", {

@@ -7,21 +7,53 @@ class ExtendedDocument extends Document {
 
     // Expects a "DB" static property from the subclass
     protected ExtendedDocument(Class clazz) {
-        //println "In super: ${clazz.getName()}"
+        println "In super: ${clazz.getName()}"
 
         if (!clazz.metaClass.hasMetaProperty("DB"))
-            throw new IllegalStateException("Could not find static property 'DB'.")        
-        
-        def database = new Server().getDatabase(clazz."DB")
-        useDatabase(database)
-        design = new Design(database.get("_design/${DB}"))
-        design.name = DB
-        design.database = database
+            throw new IllegalStateException("Could not find static property 'DB'.")         
+
+        useDatabase(new Server().getDatabase(clazz."DB"))
+        design = getDesign(clazz)        
 
         setupFinders(clazz, design)
     }
 
-    private static def setupFinders(Class clazz, design) {
+    protected static def viewBy(Class clazz, plist) {
+        //println "viewBy ${clazz} ${plist}"
+
+        if (!clazz.metaClass.hasMetaProperty("DB"))
+            throw new IllegalStateException("Could not find static property 'DB'.")
+
+        def des
+        try {
+            des = getDesign(clazz)            
+        } catch (e) {            
+            des = new Design()
+        }
+
+        if (des.has("views") && des.get("views")["by_${plist}"])
+            return
+
+        
+        des.database = new Server().getDatabase(clazz."DB")
+        des.name = clazz."DB"
+        des.viewBy(plist)
+        des.save()        
+    }
+
+    private static def getDesign(Class clazz) {
+        if (!clazz.metaClass.hasMetaProperty("DB"))
+            throw new IllegalStateException("Could not find static property 'DB'.")
+
+        def database = new Server().getDatabase(clazz."DB")        
+        def des = new Design(database.get("_design/${clazz.'DB'}"))
+        des.name = clazz."DB"
+        des.database = database
+
+        return des
+    }
+
+    private static def setupFinders(Class clazz, design) {      
         //println "Attach class methods to ${clazz.getName()}"
 
         def mc = clazz.metaClass
