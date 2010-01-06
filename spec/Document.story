@@ -1,6 +1,5 @@
 import grouchrest.*
 
-class Video extends Document { }
 TESTDB="test_98574"
 
 before_each "clean database", {
@@ -19,29 +18,6 @@ scenario "get/set property", {
     doc.get("enamel").shouldBe null
     doc.put("enamel", "Strong")
     doc.get("enamel").shouldBe "Strong"
-  }
-}
-
-scenario "default database", {
-  before_each "clear", {
-    Video.useDatabase null
-  }
-
-  then "it should be set using useDatabase on the model", {
-    new Video().database.shouldBe null
-    Video.useDatabase db
-    new Video().database.shouldBe db
-    Video.useDatabase null
-  }
-
-  then "it should be overwritten by instance", {
-    test = server.getDatabase("test")
-    article = new Video()
-    article.database.shouldBe null
-    article.database = test
-    article.database.shouldNotBe null
-    article.database.shouldBe test
-    
   }
 }
 
@@ -75,5 +51,50 @@ scenario "save", {
     doc.save().shouldBe true
     doc.id.shouldNotBe null
     doc.rev.shouldNotBe null
+  }
+}
+
+// for now let's assume it's there
+class X extends Document {
+  static def DB = "xdb"
+}
+
+class Y extends Document {
+  static def DB = "ydb"
+}
+  
+scenario "default database name for subclasses", {
+  given "two document subclasses", {
+    x = new X()
+    y = new Y()
+  }
+
+  then "it should use different databases", {
+    x.DB.shouldBe "xdb"
+    y.DB.shouldBe "ydb"
+  }
+}
+
+class Video extends Document {
+  static def DB = "test_98574" 
+
+  def Video() {
+    database = new Server().getDatabase(DB)
+  }
+}
+
+scenario "default database", {
+  given "a Video document", {
+    v = new Video()
+  }
+
+  then "it should have a database property", {
+    v.database.name.shouldBe TESTDB
+  }
+
+  then "it should be overwritten", {
+    replacement = new Server().getDatabase("x")
+    v.useDatabase replacement
+    v.database.name.shouldBe "x"
   }
 }

@@ -1,10 +1,10 @@
 package grouchrest
 
-class Document extends PropertyList {
+class Document extends PropertyList {    
 
-    static def database
+    def database
 
-    static def useDatabase(db) {
+    def useDatabase(db) {
         database = db
     }
 
