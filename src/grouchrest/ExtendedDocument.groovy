@@ -92,30 +92,7 @@ class ExtendedDocument extends Document {
         def doc = design.database.get(args[0])
         //println doc
         clazz.newInstance(doc)
-    }
-
-    private static def setupFinders(Class clazz, design) {      
-        //println "Attach class methods to ${clazz.getName()}"
-
-        def mc = clazz.metaClass
-        mc.'static'.methodMissing = { String name, args ->
-            def m = name =~ /by(\w+)/
-
-            if (m.size() == 0)
-                throw new MissingMethodException(name, clazz, args)
-
-            def property = m[0][1].toLowerCase()
-            if (!design.get("views")["by_${property}"])
-                throw new MissingMethodException(name, clazz, args)
-
-            if (args.size() == 0)
-                design.view("by_${property}")
-            else if (args.size() == 1 && args[0] instanceof Map)
-                design.view("by_${property}", args[0])
-            else
-                throw new MissingMethodException(name, clazz, args)
-        }        
-    }
+    }    
 	
 }
 
