@@ -1,9 +1,13 @@
 package grouchrest
 
 // has a default database and a design document
-class ExtendedDocument extends Document {    
+class ExtendedDocument extends Document {
 
     protected def design
+
+    private def callbacks = [
+        "beforeDestroy"
+    ]
 
     // Expects a "DB" static property from the subclass
     protected ExtendedDocument(Class clazz, Map params = null) {
@@ -14,7 +18,9 @@ class ExtendedDocument extends Document {
             throw new IllegalStateException("Could not find static property 'DB'.")         
 
         useDatabase(new Server().getDatabase(clazz."DB"))
-        design = getDesign(clazz)        
+        //design = getDesign(clazz)
+
+        design = makeDesignDocument(clazz)
 
         setupClassIntercept(clazz, design)
     }
@@ -25,22 +31,30 @@ class ExtendedDocument extends Document {
         if (!clazz.metaClass.hasMetaProperty("DB"))
             throw new IllegalStateException("Could not find static property 'DB'.")
 
-        def des
+        def des = makeDesignDocument(clazz)
+        /*
         try {
             des = getDesign(clazz)            
         } catch (e) {            
             des = new Design()
-        }
+        }*/
 
         if (des.has("views") && des.get("views")["by_${plist}"])
             return
 
         
-        des.database = new Server().getDatabase(clazz."DB")
-        des.name = clazz."DB"
+        //des.database = new Server().getDatabase(clazz."DB")
+        //des.name = clazz."DB"
         des.viewBy(plist)
         des.save()        
-    }    
+    }
+
+    def methodMissing(String name, args) {
+        if (callbacks.find { it == name })
+            return
+        else
+            throw new MissingMethodException(name, ExtendedDocument.class, args)
+    }
 
     private static def getDesign(Class clazz) {
         if (!clazz.metaClass.hasMetaProperty("DB"))
@@ -50,6 +64,22 @@ class ExtendedDocument extends Document {
         def des = new Design(database.get("_design/${clazz.'DB'}"))
         des.name = clazz."DB"
         des.database = database
+
+        return des
+    }
+
+    // A database has one design document
+    private static def makeDesignDocument(Class clazz) {
+        def des
+
+        try {
+            des = getDesign(clazz)
+        } catch (e) {
+            des = new Design()
+            des.name = clazz."DB"
+            des.database = new Server().getDatabase(clazz."DB")
+            des.save()
+        }
 
         return des
     }

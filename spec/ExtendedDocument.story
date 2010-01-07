@@ -116,3 +116,36 @@ scenario "getting a model with sub-objects", {
     course.get("questions")
   }
 }
+
+scenario "callback on destroy", {
+  then "it should invoke callbacks", {
+    art = new Article(["title" : "foo"])
+    try {
+      art.save()
+    } catch (e) { e.printStackTrace() }
+  }
+
+}
+
+/*
+scenario "saving a model with a unique_id configured", {
+  given "an article", {
+    art = new Article()
+    try { 
+      old = Article.get("this-is-the-title")
+      db.deleteDoc(old)
+    } catch (e) { }
+    
+  }
+
+  then "it should be a new document", {
+    art.get("title").shouldBe null
+    art.id.shouldBe null
+    art.rev.shouldBe null
+  }
+
+  then "it should require the title", {
+    ensureThrows(IllegalStateException) { art.save() }
+    //try { art.save() } catch (e) { e.printStackTrace() }
+  }
+}*/
