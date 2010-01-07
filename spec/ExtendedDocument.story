@@ -122,8 +122,18 @@ scenario "callback on destroy", {
     art = new Article(["title" : "foo"])
     art.save()
     art.destroy()
+    art.bdest.shouldBe 1
+    art.adest.shouldBe 1
   }
+}
 
+scenario "callback on save", {
+  then "it should invoke callbacks", {
+    art = new Article(["title" : "bar"])
+    art.save()
+    art.bsave.shouldBe 1
+    art.asave.shouldBe 1
+  }
 }
 
 /*

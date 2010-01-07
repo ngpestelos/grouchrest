@@ -10,6 +10,12 @@ class Article extends ExtendedDocument {
         
     }
 
+    def bdest = 0
+    def adest = 0
+
+    def bsave = 0
+    def asave = 0
+
     def Article() {
         super(Article.class)
     }
@@ -18,8 +24,20 @@ class Article extends ExtendedDocument {
         super(Article.class, doc)
     }
 
-    def beforeDestroy() {
-        println "before destroy"
+    def beforeDestroy() {        
+        bdest += 1
+    }
+
+    def afterDestroy() {
+        adest += 1
+    }
+
+    def beforeSave() {
+        bsave += 1
+    }
+
+    def afterSave() {
+        asave += 1
     }
 
 }

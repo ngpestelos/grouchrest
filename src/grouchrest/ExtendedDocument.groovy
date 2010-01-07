@@ -6,7 +6,10 @@ class ExtendedDocument extends Document {
     protected def design
 
     private def callbacks = [
-        "beforeDestroy"
+        "beforeDestroy",
+        "afterDestroy",
+        "beforeSave",
+        "afterSave"
     ]
 
     // Expects a "DB" static property from the subclass
@@ -42,6 +45,13 @@ class ExtendedDocument extends Document {
     def destroy() {
         beforeDestroy()
         super.destroy()
+        afterDestroy()
+    }
+
+    def save() {
+        beforeSave()
+        super.save()
+        afterSave()
     }
 
     def methodMissing(String name, args) {
