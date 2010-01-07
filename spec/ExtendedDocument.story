@@ -120,9 +120,8 @@ scenario "getting a model with sub-objects", {
 scenario "callback on destroy", {
   then "it should invoke callbacks", {
     art = new Article(["title" : "foo"])
-    try {
-      art.save()
-    } catch (e) { e.printStackTrace() }
+    art.save()
+    art.destroy()
   }
 
 }

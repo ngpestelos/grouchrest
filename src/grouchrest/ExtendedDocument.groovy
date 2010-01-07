@@ -17,8 +17,7 @@ class ExtendedDocument extends Document {
         if (!clazz.metaClass.hasMetaProperty("DB"))
             throw new IllegalStateException("Could not find static property 'DB'.")         
 
-        useDatabase(new Server().getDatabase(clazz."DB"))
-        //design = getDesign(clazz)
+        useDatabase(new Server().getDatabase(clazz."DB"))        
 
         design = makeDesignDocument(clazz)
 
@@ -31,22 +30,18 @@ class ExtendedDocument extends Document {
         if (!clazz.metaClass.hasMetaProperty("DB"))
             throw new IllegalStateException("Could not find static property 'DB'.")
 
-        def des = makeDesignDocument(clazz)
-        /*
-        try {
-            des = getDesign(clazz)            
-        } catch (e) {            
-            des = new Design()
-        }*/
+        def des = makeDesignDocument(clazz)        
 
         if (des.has("views") && des.get("views")["by_${plist}"])
             return
-
         
-        //des.database = new Server().getDatabase(clazz."DB")
-        //des.name = clazz."DB"
         des.viewBy(plist)
         des.save()        
+    }
+
+    def destroy() {
+        beforeDestroy()
+        super.destroy()
     }
 
     def methodMissing(String name, args) {

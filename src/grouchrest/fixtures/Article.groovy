@@ -18,4 +18,8 @@ class Article extends ExtendedDocument {
         super(Article.class, doc)
     }
 
+    def beforeDestroy() {
+        println "before destroy"
+    }
+
 }
