@@ -86,3 +86,33 @@ scenario "getting a model", {
     ensureThrows(MissingMethodException) { Article.get() }
   }
 }
+
+scenario "getting a model with sub-objects", {
+  given "a course document", {
+    doc = [
+      "title" : "Metaphysics 200",
+      "questions" : [
+        ["q" : "Carve the ___ reality at the ___.",
+         "a" : ["beast", "joints"]],
+        ["q" : "Who layed the smack down on Leibniz Law?",
+         "a" : "Willard Von Orman Quine"]
+      ]
+    ]
+
+    course = new Course(doc)
+    course.save()
+  }
+
+  then "it should get the title", {
+    course.get("title").shouldBe "Metaphysics 200"
+  }
+
+  then "it should get the questions", {
+    course.get("questions").size().shouldBe 2
+    first = course.get("questions")[0]
+    first["q"].shouldBe "Carve the ___ reality at the ___."
+    first["a"][0].shouldBe "beast"
+    first["a"][1].shouldBe "joints"
+    course.get("questions")
+  }
+}
