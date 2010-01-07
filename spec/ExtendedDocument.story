@@ -59,3 +59,30 @@ scenario "dynamic finder", {
     res["rows"][0]["key"].shouldBe "A"
   }
 }
+
+scenario "a new model", {
+  then "it should be a new document", {
+    doc = new Article()
+    doc.rev.shouldBe null
+  }
+}
+
+scenario "getting a model", {
+  given "an article", {
+    art = new Article()
+    art.put("title", "All About Getting")
+    art.save()
+  }
+
+  then "it should load and instantiate it", {
+    foundart = Article.get(art.id)
+    (foundart instanceof Article).shouldBe true
+    foundart.get("title").shouldBe "All About Getting"
+    foundart.id.shouldNotBe null
+    foundart.rev.shouldNotBe null
+  }
+
+  then "it should fail if there are no args", {
+    ensureThrows(MissingMethodException) { Article.get() }
+  }
+}

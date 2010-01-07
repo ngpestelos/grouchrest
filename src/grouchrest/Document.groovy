@@ -17,6 +17,7 @@ class Document extends PropertyList {
     }
 
     def Document(Map params = null) {
+        //println "new Document ${params}"
         params?.each {k, v -> put(k, v) }
     }
 
