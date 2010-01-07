@@ -32,6 +32,24 @@ class Document extends PropertyList {
             return res["ok"]
         }
     }
+
+    // Removes the "_id" and "_rev fields
+    def destroy() {
+        if (!has("_id"))
+            throw new IllegalStateException("Could not find _id. The document appears to be new.")
+
+        if (!database)
+            throw new IllegalStateException("database required for saving")
+
+        // TODO: Funky syntax. I should learn how to overload operators (c.getFoo() => c["foo"])
+        def res = database.deleteDoc(getAttributes())
+        if (res["ok"]) {
+            remove("_id")
+            remove("_rev")
+        }
+
+        res["ok"]
+    }
 	
 }
 

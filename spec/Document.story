@@ -98,3 +98,22 @@ scenario "default database", {
     v.database.name.shouldBe "x"
   }
 }
+
+scenario "destroy existing document", {
+  given "a document", {
+    doc = new Document("name" : "Nesingwary 4000")
+    doc.database = db
+    doc.save()
+    assert (doc.get("_id") != null)
+    assert (doc.get("_rev") != null)
+  }
+
+  when "destroyed", {
+    doc.destroy()
+  }
+
+  then "it's gone", {
+    doc.get("_id").shouldBe null
+    doc.get("_rev").shouldBe null 
+  }
+}

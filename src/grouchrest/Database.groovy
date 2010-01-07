@@ -101,7 +101,7 @@ class Database {
         getMap(res)
     }
 
-    def deleteDoc(doc) {
+    def deleteDoc(Map doc) {        
         def res = HttpClient.delete("${getURI()}/${doc["_id"]}?rev=${doc["_rev"]}")
         getMap(res)
     }
