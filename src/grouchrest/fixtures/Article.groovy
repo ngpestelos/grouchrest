@@ -2,13 +2,7 @@ package grouchrest.fixtures
 
 import grouchrest.ExtendedDocument
 
-class Article extends ExtendedDocument {
-
-    static def DB = "grouchrest_test"
-
-    static {
-        
-    }
+class Article extends ExtendedDocument {    
 
     def bdest = 0
     def adest = 0
@@ -16,12 +10,20 @@ class Article extends ExtendedDocument {
     def bsave = 0
     def asave = 0
 
+    private static def a
+
+    static {
+        a = new Article()
+        viewBy(a, "title")
+        viewBy(a, "type")
+    }
+
     def Article() {
-        super(Article.class)
+        super("grouchrest_test")
     }
 
     def Article(Map doc) {
-        super(Article.class, doc)
+        super("grouchrest_test", doc)
     }
 
     def beforeDestroy() {        
@@ -38,6 +40,10 @@ class Article extends ExtendedDocument {
 
     def afterSave() {
         asave += 1
+    }
+
+    static Integer count() {        
+        a.design.view("by_type", ["key" : "article"])["rows"].size()
     }
 
 }

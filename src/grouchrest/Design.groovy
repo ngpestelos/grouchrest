@@ -62,21 +62,24 @@ class Design extends Document {
         if (!database)
             throw new IllegalStateException("_design docs require a database")
 
-        viewOn database, viewName, query, closure
-    }
+        if (query == null)
+            query = [:]
 
-    def viewOn(Database db, String viewName, query = [:], closure = null) {
-        def viewSlug = "${name}/${viewName}"
-        def defaults = (get("views")[viewName] && get("views")[viewName]["grouchrest-defaults"]) ? 
-            get("views")[viewName]["grouchrest-defaults"] : [:]
-        db.view(viewSlug, defaults.plus(query), closure)
-    }
+        viewOn database, viewName, query, closure
+    }    
 
     def save() {
         if (!getName())
             throw new IllegalStateException("_design docs require a name")
 
         super.save()
+    }
+
+    private def viewOn(Database db, String viewName, query = [:], closure = null) {
+        def viewSlug = "${name}/${viewName}"
+        def defaults = (get("views")[viewName] && get("views")[viewName]["grouchrest-defaults"]) ?
+            get("views")[viewName]["grouchrest-defaults"] : [:]
+        db.view(viewSlug, defaults.plus(query), closure)
     }
 	
 }

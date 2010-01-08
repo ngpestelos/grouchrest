@@ -29,31 +29,26 @@ scenario "setup", {
   }
 }
 
-scenario "unknown static method", {
+scenario "unknown finder", {
   then "it should fail", {
-    ensureThrows(MissingMethodException) { Student.foo() }
+    ensureThrows(MissingMethodException) { Student.findByFoo() }
   }
 }
 
-scenario "dynamic finder", {
-  then "it should find by lastname", {
-    res = Student.byLastname()
+scenario "find by lastname", {
+  then "it should work", {
+    res = Student.findByLastname()
+    res["total_rows"].shouldBe 2
+  }
+
+  then "it should include docs", {
+    res = Student.findByLastname("include_docs" : true)
     res["total_rows"].shouldBe 2
     res["rows"][0]["key"].shouldBe "A"
   }
 
-  then "it should fail for junk views", {
-    ensureThrows(MissingMethodException) { Student.byFirstname() }
-  }
-
-  then "it should include docs", {
-    res = Student.byLastname(["include_docs" : true])
-    res["total_rows"].shouldBe 2
-    res["rows"][0]["doc"].shouldNotBe null
-  }
-
   then "it should find by key", {
-    res = Student.byLastname(["key" : "A"])
+    res = Student.findByLastname("key" : "A")
     res["total_rows"].shouldBe 2
     res["rows"].size().shouldBe 1
     res["rows"][0]["key"].shouldBe "A"
@@ -64,26 +59,6 @@ scenario "a new model", {
   then "it should be a new document", {
     doc = new Article()
     doc.rev.shouldBe null
-  }
-}
-
-scenario "getting a model", {
-  given "an article", {
-    art = new Article()
-    art.put("title", "All About Getting")
-    art.save()
-  }
-
-  then "it should load and instantiate it", {
-    foundart = Article.get(art.id)
-    (foundart instanceof Article).shouldBe true
-    foundart.get("title").shouldBe "All About Getting"
-    foundart.id.shouldNotBe null
-    foundart.rev.shouldNotBe null
-  }
-
-  then "it should fail if there are no args", {
-    ensureThrows(MissingMethodException) { Article.get() }
   }
 }
 
@@ -138,8 +113,8 @@ scenario "callback on save", {
 
 scenario "count regular documents", {
   given "two articles", {
-    a1 = new Article("title" : "foo")
-    a2 = new Article("title" : "bar")
+    a1 = new Article("title" : "foo", "type" : "article")
+    a2 = new Article("title" : "bar", "type" : "article")
     a1.save()
     a2.save()
   }
@@ -149,7 +124,6 @@ scenario "count regular documents", {
   }
 
   then "it should count two", {
-    gt = db.getDocuments()["total_rows"]
-    Article.count().shouldBe gt-1
+    Article.count().shouldBe 2 
   }
 }

@@ -3,20 +3,14 @@ package grouchrest.fixtures
 
 import grouchrest.ExtendedDocument
 
-class Course extends ExtendedDocument {
-
-    static def DB = "grouchrest_test"
-
-    static {
-
-    }
+class Course extends ExtendedDocument {    
 
     def Course() {
-        super(Course.class)
+        super("grouchrest_test")
     }
 
     def Course(Map doc) {
-        super(Course.class, doc)
+        super("grouchrest_test", doc)
     }
 	
 }

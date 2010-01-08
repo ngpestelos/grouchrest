@@ -11,35 +11,22 @@ class ExtendedDocument extends Document {
         "beforeSave",
         "afterSave"
     ]
-
-    // Expects a "DB" static property from the subclass
-    protected ExtendedDocument(Class clazz, Map attributes = null) {
+    
+    protected ExtendedDocument(String dbname, Map attributes = null) {
         //println "In super: ${clazz.getName()}"
         super(attributes)
-
-        if (!clazz.metaClass.hasMetaProperty("DB"))
-            throw new IllegalStateException("Could not find static property 'DB'.")         
-
-        useDatabase(new Server().getDatabase(clazz."DB"))        
-
-        design = makeDesignDocument(clazz)
-
-        setupClassIntercept(clazz, design)
+        useDatabase(new Server().getDatabase(dbname))
+        design = makeDesignDocument()        
     }
 
-    protected static def viewBy(Class clazz, plist) {
-        //println "viewBy ${clazz} ${plist}"
+    protected static def viewBy(ExtendedDocument doc, attribute) {
+        def des = doc.design
 
-        if (!clazz.metaClass.hasMetaProperty("DB"))
-            throw new IllegalStateException("Could not find static property 'DB'.")
-
-        def des = makeDesignDocument(clazz)        
-
-        if (des.has("views") && des.get("views")["by_${plist}"])
+        if (des.has("views") && des.get("views")["by_${attribute}"])
             return
-        
-        des.viewBy(plist)
-        des.save()        
+
+        des.viewBy(attribute)
+        des.save()
     }
 
     def destroy() {
@@ -59,8 +46,12 @@ class ExtendedDocument extends Document {
             return
         else
             throw new MissingMethodException(name, ExtendedDocument.class, args)
-    }
+    }    
 
+    /*
+    */
+
+    /*
     private static def getDesign(Class clazz) {
         if (!clazz.metaClass.hasMetaProperty("DB"))
             throw new IllegalStateException("Could not find static property 'DB'.")
@@ -71,9 +62,10 @@ class ExtendedDocument extends Document {
         des.database = database
 
         return des
-    }
+    }*/
 
     // A database has one design document
+    /*
     private static def makeDesignDocument(Class clazz) {
         def des
 
@@ -87,9 +79,10 @@ class ExtendedDocument extends Document {
         }
 
         return des
-    }
+    }*/
 
     // Intercept class methods
+    /*
     private static def setupClassIntercept(Class clazz, design) {
         //println "setupClassIntercept ${clazz} ${design}"
 
@@ -110,8 +103,9 @@ class ExtendedDocument extends Document {
             if (match.size() == 0)
                 throw new MissingMethodException(name, clazz, args)
         }
-    }
+    }*/
 
+    /*
     private static byProperty(p, name, args, clazz, design) {
         def property = p.toLowerCase()
         if (!design.get("views")["by_${property}"])
@@ -123,8 +117,9 @@ class ExtendedDocument extends Document {
             design.view("by_${property}", args[0])
         else
             throw new MissingMethodException(name, clazz, args)
-    }
+    }*/
 
+    /*
     private static get(name, args, clazz, design) {
         //println "get ${args} ${design}"
         if (args.size() == 0)
@@ -133,15 +128,36 @@ class ExtendedDocument extends Document {
         def doc = design.database.get(args[0])
         //println doc
         clazz.newInstance(doc)
-    }
+    }*/
 
+    /*
     private static countDocuments(clazz) {
         //println "count ${clazz}"
         def db = new Server().getDatabase(clazz."DB")
         def all = db.getDocuments()
         def filter = all["rows"].findAll { row -> !(row["id"].startsWith("_design/")) }
         filter.size()
+    }*/
+
+    ////
+    //// Private methods
+    ////
+
+    private def makeDesignDocument() {
+        def des
+        
+        try {
+            des = new Design(database.get("_design/${database.name}"))
+            des.name = database.name
+            des.database = database
+        } catch (e) {
+            des = new Design()
+            des.name = database.name
+            des.database = new Server().getDatabase(des.name)
+            des.save()
+        }
+
+        return des
     }
-	
 }
 

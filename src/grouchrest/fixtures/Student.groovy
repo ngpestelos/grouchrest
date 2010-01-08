@@ -3,17 +3,21 @@ package grouchrest.fixtures
 
 import grouchrest.ExtendedDocument
 
-class Student extends ExtendedDocument {
+class Student extends ExtendedDocument {    
 
-    static def DB = "grouchrest_test"
+    private static def s
 
     static {
-        viewBy (Student.class, "lastname")
+        s = new Student()
+        viewBy(s, "lastname")
     }
 
     def Student() {
-        super(Student.class)
-    }    
+        super("grouchrest_test")        
+    }
+
+    static def findByLastname(Map params = [:]) {
+        s.design.view("by_lastname", params)
+    }
 	
 }
-
