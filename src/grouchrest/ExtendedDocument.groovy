@@ -91,6 +91,8 @@ class ExtendedDocument extends Document {
 
     // Intercept class methods
     private static def setupClassIntercept(Class clazz, design) {
+        //println "setupClassIntercept ${clazz} ${design}"
+
         def mc = clazz.metaClass
         mc.'static'.methodMissing = { String name, args ->
             def match = name =~ /by(\w+)/
@@ -100,6 +102,10 @@ class ExtendedDocument extends Document {
             match = name =~ /get/
             if (match.size() > 0)
                 return get(name, args, clazz, design)
+
+            match = name =~ /count/
+            if (match.size() > 0)
+                return countDocuments(clazz)
 
             if (match.size() == 0)
                 throw new MissingMethodException(name, clazz, args)
@@ -127,7 +133,15 @@ class ExtendedDocument extends Document {
         def doc = design.database.get(args[0])
         //println doc
         clazz.newInstance(doc)
-    }    
+    }
+
+    private static countDocuments(clazz) {
+        //println "count ${clazz}"
+        def db = new Server().getDatabase(clazz."DB")
+        def all = db.getDocuments()
+        def filter = all["rows"].findAll { row -> !(row["id"].startsWith("_design/")) }
+        filter.size()
+    }
 	
 }
 

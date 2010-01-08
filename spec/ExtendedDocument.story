@@ -136,25 +136,20 @@ scenario "callback on save", {
   }
 }
 
-/*
-scenario "saving a model with a unique_id configured", {
-  given "an article", {
-    art = new Article()
-    try { 
-      old = Article.get("this-is-the-title")
-      db.deleteDoc(old)
-    } catch (e) { }
-    
+scenario "count regular documents", {
+  given "two articles", {
+    a1 = new Article("title" : "foo")
+    a2 = new Article("title" : "bar")
+    a1.save()
+    a2.save()
   }
 
-  then "it should be a new document", {
-    art.get("title").shouldBe null
-    art.id.shouldBe null
-    art.rev.shouldBe null
+  given "a database", {
+    db = new Server().getDatabase(TESTDB)
   }
 
-  then "it should require the title", {
-    ensureThrows(IllegalStateException) { art.save() }
-    //try { art.save() } catch (e) { e.printStackTrace() }
+  then "it should count two", {
+    gt = db.getDocuments()["total_rows"]
+    Article.count().shouldBe gt-1
   }
-}*/
+}
