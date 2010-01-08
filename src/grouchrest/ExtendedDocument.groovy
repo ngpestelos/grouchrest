@@ -13,9 +13,9 @@ class ExtendedDocument extends Document {
     ]
 
     // Expects a "DB" static property from the subclass
-    protected ExtendedDocument(Class clazz, Map params = null) {
+    protected ExtendedDocument(Class clazz, Map attributes = null) {
         //println "In super: ${clazz.getName()}"
-        super(params)
+        super(attributes)
 
         if (!clazz.metaClass.hasMetaProperty("DB"))
             throw new IllegalStateException("Could not find static property 'DB'.")         

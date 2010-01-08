@@ -16,9 +16,9 @@ class Document extends PropertyList {
         get("_rev")
     }
 
-    def Document(Map params = null) {
+    def Document(Map attributes = null) {
         //println "new Document ${params}"
-        params?.each {k, v -> put(k, v) }
+        attributes?.each {k, v -> put(k, v) }
     }
 
     def save() {
