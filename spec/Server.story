@@ -41,3 +41,14 @@ scenario "get info", {
     couch.getInfo().shouldNotBe null
   }
 }
+
+scenario "show databases", {
+  given "a default database", {
+    try { HttpClient.delete("http://127.0.0.1:5984/test_98765") } catch (e) { }
+    couch.defineAvailableDatabase("test", "test_98765")
+  }
+
+  then "it should include the test database", {
+    couch.allDatabases().shouldHave "test_98765"
+  }
+}

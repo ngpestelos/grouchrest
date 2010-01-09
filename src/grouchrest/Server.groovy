@@ -46,6 +46,11 @@ class Server {
         HttpClient.get("${uri}")        
     }
 
+    def allDatabases() {
+        def res = HttpClient.get("${uri}/_all_dbs")
+        CouchUtils.getList(res)
+    }
+
     ////
     //// Private methods
     ////    
