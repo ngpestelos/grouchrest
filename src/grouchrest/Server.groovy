@@ -20,6 +20,10 @@ class Server {
         availableDatabases[key] = createUnlessExists ? createDatabase(name) : getDatabase(name)
     }
 
+    def defineAvailableDatabase(key) {
+        defineAvailableDatabase(key, key, false)
+    }
+
     def getURI() {
         uri
     }
