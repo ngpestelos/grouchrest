@@ -48,98 +48,25 @@ class ExtendedDocument extends Document {
             return
         else
             throw new MissingMethodException(name, ExtendedDocument.class, args)
-    }    
+    }
 
-    /*
-    */
+    static def findBy(ExtendedDocument doc, String bySomething, Map params, Boolean isDocIncluded = true) {
+        if (isDocIncluded && !params["include_docs"])
+            params["include_docs"] = true
 
-    /*
-    private static def getDesign(Class clazz) {
-        if (!clazz.metaClass.hasMetaProperty("DB"))
-            throw new IllegalStateException("Could not find static property 'DB'.")
+        def res = doc.design.view(bySomething, params)
+        def rows = res["rows"]
+        if (rows.size() == 0)
+            return null
 
-        def database = new Server().getDatabase(clazz."DB")        
-        def des = new Design(database.get("_design/${clazz.'DB'}"))
-        des.name = clazz."DB"
-        des.database = database
-
-        return des
-    }*/
-
-    // A database has one design document
-    /*
-    private static def makeDesignDocument(Class clazz) {
-        def des
-
-        try {
-            des = getDesign(clazz)
-        } catch (e) {
-            des = new Design()
-            des.name = clazz."DB"
-            des.database = new Server().getDatabase(clazz."DB")
-            des.save()
-        }
-
-        return des
-    }*/
-
-    // Intercept class methods
-    /*
-    private static def setupClassIntercept(Class clazz, design) {
-        //println "setupClassIntercept ${clazz} ${design}"
-
-        def mc = clazz.metaClass
-        mc.'static'.methodMissing = { String name, args ->
-            def match = name =~ /by(\w+)/
-            if (match.size() > 0)
-                return byProperty(match[0][1], name, args, clazz, design)
-
-            match = name =~ /get/
-            if (match.size() > 0)
-                return get(name, args, clazz, design)
-
-            match = name =~ /count/
-            if (match.size() > 0)
-                return countDocuments(clazz)
-
-            if (match.size() == 0)
-                throw new MissingMethodException(name, clazz, args)
-        }
-    }*/
-
-    /*
-    private static byProperty(p, name, args, clazz, design) {
-        def property = p.toLowerCase()
-        if (!design.get("views")["by_${property}"])
-            throw new MissingMethodException(name, clazz, args)
-
-        if (args.size() == 0)
-            design.view("by_${property}")
-        else if (args.size() == 1 && args[0] instanceof Map)
-            design.view("by_${property}", args[0])
+        def clazz = doc.getClass()
+        println clazz
+        def list = rows.collect { clazz.newInstance(it["doc"]) }
+        if (list.size() == 1)
+            list.first()
         else
-            throw new MissingMethodException(name, clazz, args)
-    }*/
-
-    /*
-    private static get(name, args, clazz, design) {
-        //println "get ${args} ${design}"
-        if (args.size() == 0)
-            throw new MissingMethodException(name, clazz, args)
-
-        def doc = design.database.get(args[0])
-        //println doc
-        clazz.newInstance(doc)
-    }*/
-
-    /*
-    private static countDocuments(clazz) {
-        //println "count ${clazz}"
-        def db = new Server().getDatabase(clazz."DB")
-        def all = db.getDocuments()
-        def filter = all["rows"].findAll { row -> !(row["id"].startsWith("_design/")) }
-        filter.size()
-    }*/
+            return list    
+    }
 
     ////
     //// Private methods
