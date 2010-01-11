@@ -19,14 +19,16 @@ class ExtendedDocument extends Document {
         design = makeDesignDocument()        
     }
 
-    protected static def viewBy(ExtendedDocument doc, attribute) {
+    protected static def makeView(ExtendedDocument doc, attribute, Boolean saveNow = true) {
         def des = doc.design
 
         if (des.has("views") && des.get("views")["by_${attribute}"])
             return
 
         des.viewBy(attribute)
-        des.save()
+        
+        if (saveNow)
+            des.save()
     }
 
     def destroy() {

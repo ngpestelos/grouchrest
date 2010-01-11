@@ -9,7 +9,7 @@ class Student extends ExtendedDocument {
 
     static {
         s = new Student()
-        viewBy(s, "lastname")
+        makeView(s, "lastname")
     }
 
     def Student() {

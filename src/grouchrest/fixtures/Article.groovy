@@ -14,8 +14,9 @@ class Article extends ExtendedDocument {
 
     static {
         a = new Article()
-        viewBy(a, "title")
-        viewBy(a, "type")
+        makeView(a, "title", false)
+        makeView(a, "type", false)
+        a.design.save()
     }
 
     def Article() {
