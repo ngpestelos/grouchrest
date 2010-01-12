@@ -93,7 +93,7 @@ class ExtendedDocument extends Document {
      * @return an instance of ExtendedDocument
      * @return a List of ExtendedDocuments
      */
-    static def findBy(ExtendedDocument doc, String bySomething, Map params, Boolean isDocIncluded = true) {
+    static def findBy(ExtendedDocument doc, String bySomething, Map params = [:], Boolean isDocIncluded = true) {
         if (isDocIncluded && !params["include_docs"])
             params["include_docs"] = true
 
@@ -103,7 +103,7 @@ class ExtendedDocument extends Document {
             return null
 
         def clazz = doc.getClass()
-        println clazz
+        //println clazz
         def list = rows.collect { clazz.newInstance(it["doc"]) }
         if (list.size() == 1)
             list.first()

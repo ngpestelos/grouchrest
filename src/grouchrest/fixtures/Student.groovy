@@ -16,8 +16,15 @@ class Student extends ExtendedDocument {
         super("grouchrest_test")        
     }
 
-    static def findByLastname(Map params = [:]) {
-        s.design.view("by_lastname", params)
+    def Student(Map attributes) {
+        super("grouchrest_test", attributes)
+    }    
+
+    static def findByLastname(String name = null) {        
+        if (name)
+            ExtendedDocument.findBy(s, "by_lastname", ["key" : name])
+        else
+            ExtendedDocument.findBy(s, "by_lastname", )
     }
 	
 }

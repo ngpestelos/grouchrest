@@ -75,6 +75,11 @@ scenario "unknown finder", {
 
 scenario "find by lastname", {
   given "two students", {
+    cleanup()
+
+    // you have to re-create the view
+    ExtendedDocument.makeView(TESTDB, ["lastname"])
+
     x = new Student()
     x.put("lastname", "Foo")
     x.save()  
@@ -86,25 +91,31 @@ scenario "find by lastname", {
 
   then "it should work", {
     res = Student.findByLastname()
-    res["total_rows"].shouldBe 2
-  }
-
-  then "it should include docs", {
-    res = Student.findByLastname("include_docs" : true)
-    res["total_rows"].shouldBe 2
-    res["rows"][0]["key"].shouldBe "Bar"
+    res.shouldNotBe null
+    res.size().shouldBe 2
+    first = res.first()
+    assert(first instanceof Student)
+    first.get("lastname").shouldBe "Bar"
   }
 
   then "it should find by key", {
-    res = Student.findByLastname("key" : "Bar")
-    res["total_rows"].shouldBe 2
-    res["rows"].size().shouldBe 1
-    res["rows"][0]["key"].shouldBe "Bar"
+    res = Student.findByLastname("Bar")
+    res.shouldNotBe null
+    assert (res instanceof Student)
+    res.get("lastname").shouldBe "Bar"
+  }
+
+  then "it should not find anything", {
+    res = Student.findByLastname("Xyz")
+    res.shouldBe null
   }
 }
 
-/*
 scenario "a new model", {
+  given "a clean database", {
+    cleanup()
+  }
+
   then "it should be a new document", {
     doc = new Article()
     doc.rev.shouldBe null
@@ -130,7 +141,7 @@ scenario "getting a model with sub-objects", {
   then "it should get the title", {
     course.get("title").shouldBe "Metaphysics 200"
   }
-
+  
   then "it should get the questions", {
     course.get("questions").size().shouldBe 2
     first = course.get("questions")[0]
@@ -175,4 +186,4 @@ scenario "count regular documents", {
   then "it should count two", {
     Article.count().shouldBe 2 
   }
-}*/
+}

@@ -12,11 +12,9 @@ class Article extends ExtendedDocument {
 
     private static def a
 
-    static {
+    static {        
+        makeView("grouchrest_test", ["title", "type"])
         a = new Article()
-        makeView(a, "title", false)
-        makeView(a, "type", false)
-        a.design.save()
     }
 
     def Article() {
