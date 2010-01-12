@@ -11,25 +11,61 @@ class ExtendedDocument extends Document {
         "beforeSave",
         "afterSave"
     ]
-    
+
     protected ExtendedDocument(String dbname, Map attributes = null) {
-        //println "In super: ${clazz.getName()}"
         super(attributes)
-        useDatabase(new Server().getDatabase(dbname))
-        design = makeDesignDocument()        
+        def db = new Server().getDatabase(dbname)
+        useDatabase(db)
+        design = makeDesignDocument(db)
     }
 
-    protected static def makeView(ExtendedDocument doc, attribute, Boolean saveNow = true) {
-        def des = doc.design
+    protected static def makeDesignDocument(db) {
+        def des
 
-        if (des.has("views") && des.get("views")["by_${attribute}"])
-            return
-
-        des.viewBy(attribute)
-        
-        if (saveNow)
+        try {
+            des = new Design(db.get("_design/${db.name}"))            
+            des.name = db.name
+            des.database = db
+        } catch (e) {            
+            des = new Design()
+            des.name = db.name
+            des.database = db            
             des.save()
+        }
+
+        return des
     }
+
+    // standard views
+    static def makeView(String dbname, List attributes) {
+        def db = new Server().getDatabase(dbname)        
+        
+        try {
+            def newDesign = new Design(db.get("_design/${dbname}"))
+            newDesign.remove("views")
+            attributes.each { newDesign.viewBy(it) }
+            def aViews = newDesign.get("views")
+
+            def baseline = new Design(db.get("_design/${dbname}"))
+            def bViews = baseline.get("views")
+
+            if (aViews.keySet() == bViews.keySet()) {
+                //println "equal set"
+                return
+            }
+
+            // TODO Something's wrong with Design.save
+            db.save(newDesign.attributes)
+            
+        } catch (e) {
+            println "Creating new design document: ${dbname}"
+            def des = new Design()
+            des.name = dbname
+            des.database = db
+            attributes.each { des.viewBy(it) }
+            des.save()
+        }        
+    }    
 
     def destroy() {
         beforeDestroy()
@@ -50,6 +86,13 @@ class ExtendedDocument extends Document {
             throw new MissingMethodException(name, ExtendedDocument.class, args)
     }
 
+    /**
+     * Queries the view for matching documents
+     *
+     * @return null if nothing found
+     * @return an instance of ExtendedDocument
+     * @return a List of ExtendedDocuments
+     */
     static def findBy(ExtendedDocument doc, String bySomething, Map params, Boolean isDocIncluded = true) {
         if (isDocIncluded && !params["include_docs"])
             params["include_docs"] = true
@@ -66,27 +109,6 @@ class ExtendedDocument extends Document {
             list.first()
         else
             return list    
-    }
-
-    ////
-    //// Private methods
-    ////
-
-    private def makeDesignDocument() {
-        def des
-        
-        try {
-            des = new Design(database.get("_design/${database.name}"))
-            des.name = database.name
-            des.database = database
-        } catch (e) {
-            des = new Design()
-            des.name = database.name
-            des.database = new Server().getDatabase(des.name)
-            des.save()
-        }
-
-        return des
-    }
+    }    
 }
 

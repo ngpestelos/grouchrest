@@ -22,6 +22,8 @@ class Document extends PropertyList {
     }
 
     def save() {
+        //println getAttributes()
+
         if (!database)
             throw new IllegalStateException("database required for saving")
 

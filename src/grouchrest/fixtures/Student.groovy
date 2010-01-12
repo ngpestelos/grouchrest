@@ -7,9 +7,9 @@ class Student extends ExtendedDocument {
 
     private static def s
 
-    static {
+    static {        
+        makeView("grouchrest_test", ["lastname"])
         s = new Student()
-        makeView(s, "lastname")
     }
 
     def Student() {

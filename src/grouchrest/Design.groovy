@@ -5,6 +5,8 @@ class Design extends Document {
     def Design() { }
 
     def Design(Map props) {
+        //println "*** Design: ${props}"
+
         props.each { k, v -> put(k, v) }
     }
 

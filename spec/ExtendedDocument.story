@@ -3,20 +3,58 @@ import grouchrest.fixtures.*
 
 before "setup the database", {
   TESTDB = "grouchrest_test"
-  try { HttpClient.delete("http://127.0.0.1:5984/${TESTDB}") } catch (e) { }
-  HttpClient.put("http://127.0.0.1:5984/${TESTDB}")
+
+  cleanup = {
+    try { HttpClient.delete("http://127.0.0.1:5984/${TESTDB}") } catch (e) { }
+    HttpClient.put("http://127.0.0.1:5984/${TESTDB}")
+  }
+
   db = new Server().getDatabase(TESTDB)
-  db.bulkSave([
-    ["lastname" : "A"],
-    ["lastname" : "B"]
-  ])
+}
+
+scenario "view by some property", {
+  given "a clean database", {
+    cleanup()
+  }
+
+  when "views are created for these attributes", {
+    ExtendedDocument.makeView(TESTDB, ["foo", "bar", "baz"])
+  }
+
+  then "it should create a design document", {
+    views = db.get("_design/${TESTDB}").get("views")
+    views.size().shouldBe 3
+    views["by_foo"].shouldNotBe null
+    views["by_bar"].shouldNotBe null
+    views["by_baz"].shouldNotBe null
+  }
+
+  then "it should not update the design doc if the list is constant", {
+    ExtendedDocument.makeView(TESTDB, ["foo", "bar", "baz"])
+
+    design = new Design(db.get("_design/${TESTDB}"))
+    design.rev[0].shouldBe "1"
+  }
+
+  then "it should update if an attribute is added", {
+    ExtendedDocument.makeView(TESTDB, ["foo", "bar", "baz", "abc"])
+
+    design = new Design(db.get("_design/${TESTDB}"))
+    design.rev[0].shouldBe "2"
+  }
+
+  then "it should update if an attribute is removed", {
+    ExtendedDocument.makeView(TESTDB, ["bar", "baz", "abc"])
+
+    design = new Design(db.get("_design/${TESTDB}"))
+    design.rev[0].shouldBe "3"
+  }
 }
 
 scenario "setup", {
   given "a student", {
-    try {
-      student = new Student()
-    } catch (e) { e.printStackTrace() }
+    cleanup() 
+    student = new Student()
   }
 
   then "it should have a default database", {
@@ -36,6 +74,16 @@ scenario "unknown finder", {
 }
 
 scenario "find by lastname", {
+  given "two students", {
+    x = new Student()
+    x.put("lastname", "Foo")
+    x.save()  
+
+    y = new Student()
+    y.put("lastname", "Bar")
+    y.save()
+  }
+
   then "it should work", {
     res = Student.findByLastname()
     res["total_rows"].shouldBe 2
@@ -44,17 +92,18 @@ scenario "find by lastname", {
   then "it should include docs", {
     res = Student.findByLastname("include_docs" : true)
     res["total_rows"].shouldBe 2
-    res["rows"][0]["key"].shouldBe "A"
+    res["rows"][0]["key"].shouldBe "Bar"
   }
 
   then "it should find by key", {
-    res = Student.findByLastname("key" : "A")
+    res = Student.findByLastname("key" : "Bar")
     res["total_rows"].shouldBe 2
     res["rows"].size().shouldBe 1
-    res["rows"][0]["key"].shouldBe "A"
+    res["rows"][0]["key"].shouldBe "Bar"
   }
 }
 
+/*
 scenario "a new model", {
   then "it should be a new document", {
     doc = new Article()
@@ -126,4 +175,4 @@ scenario "count regular documents", {
   then "it should count two", {
     Article.count().shouldBe 2 
   }
-}
+}*/
