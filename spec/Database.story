@@ -7,6 +7,7 @@ before_each "clear existing database", {
   db = server.defineAvailableDatabase("test", "test_12345", false)
 }
 
+/*
 scenario "database name including slash", {
   then "it should escape the name in the URI", {
     db = new Server().getDatabase("foo/bar")
@@ -331,5 +332,31 @@ scenario "DELETE existing document", {
     doc = db.get(res["id"])
     doc.remove("_id")
     ensureThrows(Exception) { db.deleteDoc(doc) }
+  }
+}*/
+
+scenario "cached bulk save", {
+  then "it stores documents in a database-specific cache", {
+    td = ["_id" : "btd1", "val" : "test"]
+    db.save(td, true)
+    db.bulkSaveCache.size().shouldBe 1
+    db.bulkSaveCache.first().shouldBe td
+  }
+
+  then "it doesn't save to the database until the configured cache size is exceeded", {
+    db.BULK_LIMIT = 3
+    db.bulkSaveCache.clear()
+
+    td1 = ["_id" : "td1", "val" : true]
+    td2 = ["_id" : "td2", "val" : 4]
+    db.save(td1, true)
+    db.save(td2, true)
+    ensureThrows(Exception) { db.get(td1["_id"]) }
+    ensureThrows(Exception) { db.get(td2["_id"]) } 
+    td3 = ["_id" : "td3", "val" : "foo"]
+    db.save(td3, true)
+    db.get(td1["_id"])["val"].shouldBe td1["val"]
+    db.get(td2["_id"])["val"].shouldBe td2["val"]
+    db.get(td3["_id"])["val"].shouldBe td3["val"]
   }
 }

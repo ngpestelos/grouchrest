@@ -13,6 +13,8 @@ class Database {
     def host
     def name
     def uri
+    def bulkSaveCache = []
+    def BULK_LIMIT = 100
 
     def getJSONObject = CouchUtils.&getJSONObject
     def getMap = CouchUtils.&getMap
@@ -43,12 +45,31 @@ class Database {
         bulkSave([doc])
     }
 
-    List bulkSave(List array) {
-        def docs = getJSONObject(["docs" : array]).toString()
-        def res = HttpClient.post("${getURI()}/_bulk_docs", docs)
-        getList(res)
-    }
+    /**
+     * POST an array of documents to CouchDB.
+     * Generate UUIDs if there are documents with missing UUIDs
+     *
+     * If called with no arguments, saves from the cache
+     */
+    List bulkSave(List docs = null, use_uuids = true) {
+      if (!docs) {
+        docs = bulkSaveCache
+        bulkSaveCache = []
+      }
 
+      if (use_uuids) {
+        def parts = docs.split { it["_id"] }
+        def noids = parts[1]
+        noids.each { doc ->
+          doc['_id'] = getUUID()
+        }
+      }
+
+      def json = getJSONObject(["docs" : docs]).toString()
+      def res = HttpClient.post("${getURI()}/_bulk_docs", json)
+      getList(res)
+    }
+  
     Map tempView(view, params = [:]) {
         def keys = params.remove("keys")
         if (keys)
@@ -59,14 +80,22 @@ class Database {
         getMap(res)
     }
 
-    Map save(Map doc) {
+    Map save(Map doc, bulk = false) {
         if (!doc)
             throw new IllegalArgumentException("Document is required.")
 
-        def json = getJSONObject(doc)
-        def id = json.has("_id") ? json.get("_id") : getUUID()
-        def res = HttpClient.put("${getURI()}/${id}", json.toString())
-        getMap(res)
+        if (bulk) {
+          bulkSaveCache << doc
+          if (bulkSaveCache.size() >= BULK_LIMIT) {
+            bulkSave()
+            return ["ok" : true] // return expects a map
+          }
+        } else { 
+          def json = getJSONObject(doc)
+          def id = json.has("_id") ? json.get("_id") : getUUID()
+          def res = HttpClient.put("${getURI()}/${id}", json.toString())
+          return getMap(res)
+        }
     }
 
     Map view(name, params = [:], closure = null) {
