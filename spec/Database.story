@@ -358,4 +358,19 @@ scenario "cached bulk save", {
     db.get(td2["_id"])["val"].shouldBe td2["val"]
     db.get(td3["_id"])["val"].shouldBe td3["val"]
   }
+
+  then "it should flush the cache", {
+    td1 = ["_id" : "xtd1", "val" : true]
+    db.save(td1, true)
+
+    td2 = ["_id" : "xtd2", "val" : 4]
+    db.save(td2, true)
+
+    td3 = ["_id" : "xtd3", "val" : "foo"]
+    db.save(td3)
+
+    db.get(td1["_id"])["val"].shouldBe td1["val"]
+    db.get(td2["_id"])["val"].shouldBe td2["val"]
+    db.get(td3["_id"])["val"].shouldBe td3["val"]
+  }
 }

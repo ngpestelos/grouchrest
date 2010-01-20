@@ -90,6 +90,12 @@ class Database {
             bulkSave()
             return ["ok" : true] // return expects a map
           }
+        } else if (!bulk && bulkSaveCache.size() > 0) {
+          bulkSave()
+          def json = getJSONObject(doc)
+          def id = json.has("_id") ? json.get("_id") : getUUID()
+          def res = HttpClient.put("${getURI()}/${id}", json.toString())
+          return getMap(res)
         } else { 
           def json = getJSONObject(doc)
           def id = json.has("_id") ? json.get("_id") : getUUID()
