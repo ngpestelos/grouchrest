@@ -7,7 +7,6 @@ before_each "clear existing database", {
   db = server.defineAvailableDatabase("test", "test_12345", false)
 }
 
-/*
 scenario "database name including slash", {
   then "it should escape the name in the URI", {
     db = new Server().getDatabase("foo/bar")
@@ -333,7 +332,7 @@ scenario "DELETE existing document", {
     doc.remove("_id")
     ensureThrows(Exception) { db.deleteDoc(doc) }
   }
-}*/
+}
 
 scenario "cached bulk save", {
   then "it stores documents in a database-specific cache", {
