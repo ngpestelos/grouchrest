@@ -24,7 +24,7 @@ class Student extends ExtendedDocument {
         if (name)
             ExtendedDocument.findBy(s, "by_lastname", ["key" : name])
         else
-            ExtendedDocument.findBy(s, "by_lastname", )
+            ExtendedDocument.findBy(s, "by_lastname")
     }
 	
 }
