@@ -58,6 +58,11 @@ class ExtendedDocument extends Document {
             db.save(newDesign.attributes)
             
         } catch (e) {
+            try {
+                def doc = db.get("_design/${dbname}")
+                db.deleteDoc(doc)
+            } catch (ex) { }
+
             println "Creating new design document: ${dbname}"
             def des = new Design()
             des.name = dbname

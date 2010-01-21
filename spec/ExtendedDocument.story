@@ -51,6 +51,25 @@ scenario "view by some property", {
   }
 }
 
+scenario "make view conflict", {
+  given "a clean database", {
+    cleanup()
+  }
+
+  given "a blank design doc", {
+    doc = new Document(["_id" : "_design/${TESTDB}"])
+    doc.useDatabase(db)
+    doc.save()
+  }
+
+  then "it should still create views", {
+    ExtendedDocument.makeView(TESTDB, ["foo", "bar", "baz"])
+    views = db.get("_design/${TESTDB}").get("views")
+    views.size().shouldBe 3
+  }
+
+}
+
 scenario "setup", {
   given "a student", {
     cleanup() 
