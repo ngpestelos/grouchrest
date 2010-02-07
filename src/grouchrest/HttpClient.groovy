@@ -11,12 +11,38 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.client.methods.HttpPut
 import org.apache.http.entity.StringEntity
 
+import grouchrest.json.*
+
 
 // Hides the details of talking to commons-httpclient
 class HttpClient {    
 
-    static def get(uri) {
-        getClient().execute(new HttpGet(uri), new BasicResponseHandler())
+    static def get(uri, closure = null) {
+        
+        def client = getClient()
+        def httpget = new HttpGet(uri)
+        def response = client.execute(httpget)
+        def map = ["status" : response.getStatusLine()]
+
+        def entity = response.getEntity()
+        if (entity != null) {
+            def stream = entity.getContent()
+
+            try {                
+
+                def reader = new BufferedReader(
+                    new InputStreamReader(stream))                
+
+                map["json"] = new JSONObject(new JSONTokener(reader), closure)
+                return map
+                
+            } catch (IOException e) {
+                throw e
+            } catch (RuntimeException e) {
+                httpget.abort()
+                throw e
+            }
+        }
     }
 
     static def put(uri) {
@@ -37,6 +63,10 @@ class HttpClient {
 
     static def delete(uri) {
         getClient().execute(new HttpDelete(uri), new BasicResponseHandler())
+    }
+
+    static void main(args) {
+        get("http://127.0.0.1:5984/omgwtfbbq")
     }
 
     ////
