@@ -86,6 +86,10 @@ class JSONArray {
     int size() {
         return list.size()
     }
+
+    String toString() {
+        getInternalList().toString()
+    }
 	
 }
 
