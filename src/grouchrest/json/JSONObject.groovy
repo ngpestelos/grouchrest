@@ -31,6 +31,10 @@ class JSONObject extends PropertyList {
 
     final static def NULL = new NullObject()
 
+    def JSONObject(Map map) {
+        super(map)
+    }
+
     def JSONObject(String json, closure = null) throws JSONException {
         this(new JSONTokener(json), closure)
     }

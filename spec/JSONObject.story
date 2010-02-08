@@ -47,3 +47,10 @@ scenario "callback", {
     invoked.shouldBe 1
   }
 }
+
+scenario "takes a map", {
+  then "it should create a JSONObject", {
+    json = new JSONObject(["key" : 1])
+    json.get("key").shouldBe 1
+  }
+}

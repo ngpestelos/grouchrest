@@ -6,6 +6,8 @@ class PropertyList {
 
     protected def PropertyList() { }
 
+    protected def PropertyList(Map map) { _attributes = map }
+
     def put(key, value) {
         _attributes[key] = value
     }
