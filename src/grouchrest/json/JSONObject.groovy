@@ -31,7 +31,7 @@ class JSONObject extends PropertyList {
 
     final static def NULL = new NullObject()
 
-    def JSONObject(Map map) {
+    def JSONObject(Map map, closure = null) {
         super(map)
     }
 
@@ -327,6 +327,8 @@ class JSONObject extends PropertyList {
                 s = s.substring(0, s.length() - 1)
             }
         }
+
+        return s
     }
 
     static void testValidity(o) throws JSONException {
