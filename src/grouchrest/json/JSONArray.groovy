@@ -93,7 +93,11 @@ class JSONArray {
 
     int length() {
         return size()
-    }    
+    }
+
+    def getAt(index) {
+        return list[index]
+    }
 
     /**
      * Make a JSON text of this JSONArray. For compactness, no
