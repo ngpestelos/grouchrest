@@ -25,16 +25,22 @@ class HttpClient {
         request(new HttpPut(uri), closure)
     }
 
-    static def put(uri, String payload) {
+    static def put(uri, JSONObject payload, closure = null) {
         def httpPut = new HttpPut(uri)
-        httpPut.setEntity(new StringEntity(payload))
-        getClient().execute(httpPut, new BasicResponseHandler())
+        httpPut.setEntity(new StringEntity(payload.toString()))
+        request(httpPut, closure)
+    }    
+
+    static def post(uri, JSONObject payload) {
+        def httpPost = new HttpPost(uri)
+        httpPost.setEntity(new StringEntity(payload.toString()))
+        getClient().execute(httpPost, new BasicResponseHandler())                
     }
 
-    static def post(uri, String payload) {        
+    static def postWithStreaming(uri, JSONObject payload, closure = null) {
         def httpPost = new HttpPost(uri)
-        httpPost.setEntity(new StringEntity(payload))        
-        getClient().execute(httpPost, new BasicResponseHandler())
+        httpPost.setEntity(new StringEntity(payload.toString()))
+        request(httpPost, closure)
     }
 
     static def delete(uri, closure = null) {
@@ -49,7 +55,8 @@ class HttpClient {
 
     /**
      * Sends a HTTP request. Handles response streaming.
-     *     
+     *
+     * TODO Make this work with JSONArray
      *
      * @param method HTTP method (HttpDelete, HttpGet, HttpPost, HttpPut)     
      * @param closure callback (invoked for each JSONObject in the response)
