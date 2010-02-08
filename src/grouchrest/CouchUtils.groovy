@@ -8,22 +8,7 @@ import grouchrest.json.*
 // See couchrest.rb
 class CouchUtils {
 
-    private static def codec = new URLCodec()
-
-    /*
-    static def getJSONObject(o) {
-        if (o instanceof Map) {
-            def json = new JSONObject()
-            o.each { key, value -> json.put(key, getJSONObject(value)) }
-            return json
-        } else if (o instanceof Boolean || o instanceof Number || o instanceof String || o instanceof GStringImpl ) {
-            return o
-        } else if (o instanceof List) {
-            return getJSONArray(o)
-        }
-
-        return JSONObject.null
-    }*/
+    private static def codec = new URLCodec()    
     
     static def getMap(String jsonObject) {
         getMap(new JSONObject(jsonObject))
@@ -43,11 +28,10 @@ class CouchUtils {
 
         return map
     }
-
-    /*
+    
     static def getList(String jsonArray) {
         getList(new JSONArray(jsonArray))
-    }*/
+    }
 
     // see CouchRest
     static def paramifyURL(url, params = [:]) {
@@ -88,27 +72,6 @@ class CouchUtils {
         }
         return array
     }    
-
-    /*
-    static def getMap(JSONObject json) {
-        //println "getMap ${json}"
-
-        def map = [:]
-
-        json.keys().each { k ->
-            def value = json.get(k)
-            if (value instanceof JSONObject)
-                map[k] = getMap(value)
-            else if (value instanceof JSONArray)
-                map[k] = getList(value)
-            else
-                map[k] = value
-        }
-
-        //println "returning ${map}"
-
-        return map
-    }*/
 
     private static def getList(JSONArray json) {
         if (json.length() == 0)
