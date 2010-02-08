@@ -71,6 +71,9 @@ class Design extends Document {
     }    
 
     def save() {
+        if (!has("language"))
+            put("language", "javascript")
+
         if (!getName())
             throw new IllegalStateException("_design docs require a name")
 
