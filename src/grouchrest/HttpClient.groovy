@@ -18,35 +18,11 @@ import grouchrest.json.*
 class HttpClient {    
 
     static def get(uri, closure = null) {
-        
-        def client = getClient()
-        def httpget = new HttpGet(uri)
-        def response = client.execute(httpget)
-        def map = ["status" : response.getStatusLine()]
-
-        def entity = response.getEntity()
-        if (entity != null) {
-            def stream = entity.getContent()
-
-            try {                
-
-                def reader = new BufferedReader(
-                    new InputStreamReader(stream))                
-
-                map["json"] = new JSONObject(new JSONTokener(reader), closure)
-                return map
-                
-            } catch (IOException e) {
-                throw e
-            } catch (RuntimeException e) {
-                httpget.abort()
-                throw e
-            }
-        }
+        request(new HttpGet(uri), closure)        
     }
 
-    static def put(uri) {
-        getClient().execute(new HttpPut(uri), new BasicResponseHandler())
+    static def put(uri, closure = null) {        
+        request(new HttpPut(uri), closure)
     }
 
     static def put(uri, String payload) {
@@ -61,18 +37,50 @@ class HttpClient {
         getClient().execute(httpPost, new BasicResponseHandler())
     }
 
-    static def delete(uri) {
-        getClient().execute(new HttpDelete(uri), new BasicResponseHandler())
-    }
-
-    static void main(args) {
-        get("http://127.0.0.1:5984/omgwtfbbq")
-    }
+    static def delete(uri, closure = null) {
+        request(new HttpDelete(uri), closure)
+    }    
 
     ////
     //// Private methods
     ////
 
-    static def getClient() { return new DefaultHttpClient() }
+    private static def getClient() { return new DefaultHttpClient() }
+
+    /**
+     * Sends a HTTP request. Handles response streaming.
+     *     
+     *
+     * @param method HTTP method (HttpDelete, HttpGet, HttpPost, HttpPut)     
+     * @param closure callback (invoked for each JSONObject in the response)
+     *
+     * @return ["status" : <status line>, "response" : <json response>]
+     */
+    private static def request(method, closure = null) {
+
+        def client = getClient()
+        def response = client.execute(method)
+
+        def entity = response.getEntity()
+        if (entity != null) {
+            def stream = entity.getContent()
+
+            try {
+                
+                def reader = new BufferedReader(new InputStreamReader(stream))
+                return [
+                    "status" : response.getStatusLine(),
+                    "response" : new JSONObject(new JSONTokener(reader), closure)
+                ]
+                
+            } catch (IOException e) {
+                throw e
+            } catch (RuntimeException e) {
+                method.abort()
+                throw e
+            }
+            
+        }
+    }
 	
 }
