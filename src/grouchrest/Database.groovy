@@ -4,8 +4,10 @@ import org.apache.commons.codec.net.URLCodec
 import org.apache.commons.lang.time.StopWatch
 import org.apache.http.client.HttpResponseException
 
-import org.json.JSONArray
-import org.json.JSONObject
+//import org.json.JSONArray
+//import org.json.JSONObject
+
+import grouchrest.json.*
 
 class Database {
 
@@ -39,11 +41,7 @@ class Database {
     // Use with caution
     def delete() {
         HttpClient.delete("${uri}")
-    }
-
-    List bulkSave(Map doc) {
-        bulkSave([doc])
-    }
+    }    
 
     /**
      * POST an array of documents to CouchDB.
@@ -51,57 +49,60 @@ class Database {
      *
      * If called with no arguments, saves from the cache
      */
-    List bulkSave(List docs = null, use_uuids = true) {
-      if (!docs) {
-        docs = bulkSaveCache
-        bulkSaveCache = []
-      }
-
-      if (use_uuids) {
-        def parts = docs.split { it["_id"] }
-        def noids = parts[1]
-        noids.each { doc ->
-          doc['_id'] = getUUID()
+    List bulkSave(List docs = null, use_uuids = true) {                
+        if (!docs) {
+            docs = bulkSaveCache
+            bulkSaveCache = []
         }
-      }
 
-      def json = getJSONObject(["docs" : docs]).toString()
-      def res = HttpClient.post("${getURI()}/_bulk_docs", json)
-      getList(res)
+        if (use_uuids) {
+            def parts = docs.split { it["_id"] }
+            def noids = parts[1]
+            def ids = getUUID(noids.size())
+            noids.eachWithIndex { doc, index ->
+                doc["_id"] = ids[index]
+            }
+        }
+        
+        def json = new JSONObject(["docs" : docs])
+        def res = HttpClient.post("${getURI()}/_bulk_docs", json)        
+        def jsonArray = new JSONArray(res)
+        getList(jsonArray)
     }
-  
+
     Map tempView(view, params = [:]) {
         def keys = params.remove("keys")
         if (keys)
             view = view.plus(["keys" : keys])
 
         def url = paramify("${getURI()}/_temp_view", params)
-        def res = HttpClient.post(url, getJSONObject(view).toString())
-        getMap(res)
+        def res = HttpClient.post(url, new JSONObject(view))        
+        getMap(res)        
     }
 
     Map save(Map doc, bulk = false) {
         if (!doc)
             throw new IllegalArgumentException("Document is required.")
 
+        def getID = { doc["_id"] ?: getUUID()[0] }
+
         if (bulk) {
-          bulkSaveCache << doc
-          if (bulkSaveCache.size() >= BULK_LIMIT) {
-            bulkSave()
-            return ["ok" : true] // return expects a map
-          }
+            bulkSaveCache << doc // buffer
+            if (bulkSaveCache.size() >= BULK_LIMIT) {
+                bulkSave()
+            }
+            return ["ok" : true] // return expects a Map
         } else if (!bulk && bulkSaveCache.size() > 0) {
-          bulkSave()
-          def json = getJSONObject(doc)
-          def id = json.has("_id") ? json.get("_id") : getUUID()
-          def res = HttpClient.put("${getURI()}/${id}", json.toString())
-          return getMap(res)
-        } else { 
-          def json = getJSONObject(doc)
-          def id = json.has("_id") ? json.get("_id") : getUUID()
-          def res = HttpClient.put("${getURI()}/${id}", json.toString())
-          return getMap(res)
+            bulkSave()
         }
+
+        def res = HttpClient.put("${getURI()}/${getID()}", new JSONObject(doc))
+        //println res["status"]
+
+        if (!(res["status"] =~ /201/))
+            throw new Exception(res["status"].toString())
+            
+        return getMap(res["response"])
     }
 
     Map view(name, params = [:], closure = null) {
@@ -110,40 +111,50 @@ class Database {
         name = name.split("/")
         def dname = name[0]
         def vname = name[1]
-        def url = paramify("${getURI()}/_design/${dname}/_view/${vname}", params)
+        def uri = paramify("${getURI()}/_design/${dname}/_view/${vname}", params)
 
         def res
         if (keys)
-            res = HttpClient.post(url, getJSONObject(["keys" : keys]).toString())
+            res = HttpClient.postWithStreaming(uri, new JSONObject(["keys" : keys]), closure)
         else
-            res = HttpClient.get(url)
+            res = HttpClient.get(uri, closure)
 
-        def map = getMap(res)
+        if (!(res["status"] =~ /200/))
+            throw new Exception(res["status"].toString())
 
-        if (closure)
-            map["rows"].each { row -> closure(row) }
-
-        return map
+        return getMap(res["response"])        
     }
 
     Map get(String id) {
         def res = HttpClient.get("${getURI()}/${id}")
-        getMap(res)
+
+        if (!(res["status"] =~ /200/))
+            throw new Exception(res["status"].toString())
+
+        getMap(res["response"])
     }
 
     def getDocuments() {
-        def res = HttpClient.get("${getURI()}/_all_docs")        
-        getMap(res)
+        def res = HttpClient.get("${getURI()}/_all_docs")
+
+        if (!(res["status"] =~ /200/))
+            throw new Exception(res["status"].toString())
+
+        getMap(res["response"])
     }
 
-    def deleteDoc(Map doc) {        
+    def deleteDoc(Map doc) {
         def res = HttpClient.delete("${getURI()}/${doc["_id"]}?rev=${doc["_rev"]}")
-        getMap(res)
+
+        if (!(res["status"] =~ /200/))
+            throw new Exception(res["status"].toString())
+        
+        getMap(res["response"])
     }
 
     def exists() {
         def res = HttpClient.get("${getURI()}")
-        
+
         if (res["status"] =~ /200/)
             return true
         else
@@ -154,9 +165,14 @@ class Database {
     //// private methods
     ////
 
-    private def getUUID() {
-        def res = HttpClient.get("${host}/_uuids")
-        getMap(res)["uuids"][0]
+    private def getUUID(count = null) {
+        def uri = "${host}/_uuids"
+        if (count && count > 0)
+            uri = "${uri}?count=${count}"
+
+        def res = HttpClient.get(uri)
+        def json = res["response"]
+        json.get("uuids")
     }
 	
 }

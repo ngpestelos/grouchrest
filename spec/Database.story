@@ -1,17 +1,16 @@
 import grouchrest.*
 
-before_each "clear existing database", {
-  try { HttpClient.delete("http://127.0.0.1:5984/test_12345") } catch (e) { }
-  HttpClient.put("http://127.0.0.1:5984/test_12345")
+before_each "setup test database", {
   server = new Server()
-  db = server.defineAvailableDatabase("test", "test_12345", false)
+  server.deleteDatabase("test_54737")
+  db = server.createDatabase("test_54737")
 }
 
-scenario "database name including slash", {
+scenario "name includes a slash", {
   then "it should escape the name in the URI", {
-    db = new Server().getDatabase("foo/bar")
-    db.getName().shouldBe "foo/bar"
-    db.getURI().shouldBe "http://127.0.0.1:5984/foo%2Fbar"
+    dbx = server.getDatabase("foo/bar")
+    dbx.getName().shouldBe "foo/bar"
+    dbx.getURI().shouldBe "http://127.0.0.1:5984/foo%2Fbar"
   }
 }
 
@@ -36,11 +35,12 @@ scenario "map query with _temp_view in Javascript", {
            for (var w in doc) { if (!w.match(/^_/)) emit(w, doc[w]); }
          }"""]
   }
-
+  
   then "it should get a result", {
     println "it should get a result"
 
     res = db.tempView(view)
+
     wild = res["rows"].find { r -> r["key"] == "wild" }
     wild.shouldNotBe null
   }
@@ -65,7 +65,7 @@ scenario "map query with _temp_view in Javascript", {
     res = db.tempView(view, ["limit" : 1])
     res["rows"].size().shouldBe 1
   }
-
+  
   then "it should work with multi-keys", {
     println "it should work with multi-keys"
 
@@ -78,12 +78,13 @@ scenario "map/reduce query with _temp_view in Javascript", {
   given "some data", {
     println "map/reduce query with with _temp_view"
  
-    db.bulkSave([
+    res = db.bulkSave([
       ["beverage" : "bourbon", "count" : 1],
       ["beverage" : "scotch", "count" : 1],
       ["beverage" : "beer", "count" : 1],
       ["beverage" : "beer", "count" : 1]
     ])
+
   }
 
   then "it should return the result of the temp function", {
@@ -116,7 +117,8 @@ scenario "saving a view", {
   then "it should work properly", {
     println "it should work properly"
     db.bulkSave([["word" : "once"], ["word" : "and again"]])
-    db.view("test/test")["total_rows"].shouldBe 1
+    res = db.view("test/test")
+    res["total_rows"].shouldBe 1
   }
 
   then "it should round trip", {
@@ -197,15 +199,6 @@ scenario "select from an existing view", {
     res["rows"].size().shouldBe 2
   }
 
-  then "it should accept a block", {
-    rows = []
-    res = db.view("first/test", ["include_docs" : true]) { row ->
-      rows << row["doc"]
-    }
-
-    rows.size().shouldBe 3
-    res["total_rows"].shouldBe 3
-  }
 }
 
 scenario "GET (document by id) when the doc exists", {
