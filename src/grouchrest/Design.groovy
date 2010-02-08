@@ -11,24 +11,23 @@ package grouchrest
  */
 class Design extends Document {
 
-    def Design() { }
+    def Design(Database db, String name) {        
+        try {
+            def _design = db.get("_design/${name}")
+            _design.each { k, v -> put(k, v) }
+        } catch (e) { }
 
-    /**
-     * Create a Design Document
-     *
-     * @param props (design attributes)
-     *
-     * See CouchDB Document API
-     *
-     * Assumes an _id property is present
-     */
-    def Design(Map props) {
-        //println "*** Design: ${props}"
+        useDatabase(db)
 
-        props.each { k, v -> put(k, v) }
+        if (!id)
+            put("_id", "_design/${name}")
 
-        put("language", "javascript")
-    }    
+        if (!has("language"))
+            put("language", "javascript")
+
+        if (!has("views"))
+            put("views", [:])
+    }
 
     /**
      * Execute a named view (_view/name)
@@ -61,6 +60,10 @@ class Design extends Document {
                 
         def views = get("views")
         views["by_${attribute}"] = ["map" : mapFunction()]
+    }
+
+    def getViewNames() {
+        get("views").keySet()
     }
 	
 }
