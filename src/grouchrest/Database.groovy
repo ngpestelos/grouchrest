@@ -19,7 +19,7 @@ class Database {
     def getJSONObject = CouchUtils.&getJSONObject
     def getMap = CouchUtils.&getMap
     def getList = CouchUtils.&getList
-    def paramify = CouchUtils.&paramifyURL
+    def paramify = CouchUtils.&paramifyURL   
 
     def Database(server, name) {
         this.server = server
@@ -139,6 +139,15 @@ class Database {
     def deleteDoc(Map doc) {        
         def res = HttpClient.delete("${getURI()}/${doc["_id"]}?rev=${doc["_rev"]}")
         getMap(res)
+    }
+
+    def exists() {
+        def res = HttpClient.get("${getURI()}")
+        
+        if (res["status"] =~ /200/)
+            return true
+        else
+            return false
     }
 
     ////
