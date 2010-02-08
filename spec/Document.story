@@ -3,7 +3,7 @@ import grouchrest.*
 TESTDB="test_98574"
 
 before_each "clean database", {
-  try { HttpClient.delete("http://127.0.0.1:5984/${TESTDB}") } catch (e) { }
+  HttpClient.delete("http://127.0.0.1:5984/${TESTDB}")
   HttpClient.put("http://127.0.0.1:5984/${TESTDB}")
   server = new Server()
   db = server.getDatabase(TESTDB)
@@ -30,7 +30,7 @@ scenario "new", {
     assert doc.get("key") == [1,2,3]
     assert doc.get("more") == "values"
   }
-  
+
   then "it should not have rev and id", {
     doc.id.shouldBe null
     doc.rev.shouldBe null
@@ -51,27 +51,6 @@ scenario "save", {
     doc.save().shouldBe true
     doc.id.shouldNotBe null
     doc.rev.shouldNotBe null
-  }
-}
-
-// for now let's assume it's there
-class X extends Document {
-  static def DB = "xdb"
-}
-
-class Y extends Document {
-  static def DB = "ydb"
-}
-  
-scenario "default database name for subclasses", {
-  given "two document subclasses", {
-    x = new X()
-    y = new Y()
-  }
-
-  then "it should use different databases", {
-    x.DB.shouldBe "xdb"
-    y.DB.shouldBe "ydb"
   }
 }
 
@@ -115,5 +94,16 @@ scenario "destroy existing document", {
   then "it's gone", {
     doc.get("_id").shouldBe null
     doc.get("_rev").shouldBe null 
+  }
+}
+
+scenario "destroy unsaved document", {
+  given "a document", {
+    doc = new Document("name" : "Nesingwary 4000")
+    doc.database = db
+  }
+
+  then "it should fail", {
+    ensureThrows(Exception) { doc.destroy() }
   }
 }
