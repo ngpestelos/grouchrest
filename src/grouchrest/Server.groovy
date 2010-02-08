@@ -2,44 +2,34 @@ package grouchrest
 
 class Server {
 
-    def uri
-    def availableDatabases
-
-    static final String DEFAULT = "default"
+    def uri    
 
     def Server(server = "http://127.0.0.1:5984") {
-        this.uri = server
-        def dict = [:]
-        dict.getMetaClass().hasKey = { k ->
-            k in delegate.keySet()
-        }
-        this.availableDatabases = dict
-    }
-
-    def defineAvailableDatabase(key, name, createUnlessExists = true) {
-        availableDatabases[key] = createUnlessExists ? createDatabase(name) : getDatabase(name)
-    }
+        this.uri = server        
+    }    
 
     def getURI() {
         uri
-    }
+    }    
 
-    def availableDatabase(key) {
-        availableDatabases.hasKey(key)
-    }
-
-    def setDefaultDatabase(name) {
-        defineAvailableDatabase(DEFAULT, name)
-    }
-
-    def getDefaultDatabase() {
-        availableDatabases[DEFAULT]
-    }
-
-    def createDatabase(name) {        
-        //println "createDatabase ${uri}/${name}"
+    /**
+     * Sends a PUT request to CouchDB to create a database
+     *
+     * @param name - database
+     * @return Database representing the database
+     */
+    def createDatabase(name) {
         HttpClient.put("${uri}/${name}")
         new Database(this, name)
+    }
+
+    /**
+     * The inverse of createDatabase
+     *
+     * @param name - database
+     */
+    def deleteDatabase(name) {
+        HttpClient.delete("${uri}/${name}")
     }
 
     def getInfo() {

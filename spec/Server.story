@@ -4,51 +4,42 @@ before "setup local server", {
   couch = new Server()
 }
 
-after_each "", {
-  try { HttpClient.delete("http://127.0.0.1:5984/grouch-server-test-db") } catch (e) { }
-  try { HttpClient.delete("http://127.0.0.1:5984/grouch-server-default-db") } catch (e) { }
-}
-
-scenario "add databases", {
-
-  then "it should let you add more databases", {
-    couch.getAvailableDatabases().shouldBeEmpty
-    couch.defineAvailableDatabase(Server.DEFAULT, "grouch-server-test-db")
-    couch.getAvailableDatabases()[Server.DEFAULT].shouldNotBe null
-  }
-
-}
-
-scenario "verify database", {
-
-  then "it should verify that a database is available", {
-    couch.defineAvailableDatabase(Server.DEFAULT, "grouch-server-test-db")
-    couch.availableDatabase(Server.DEFAULT).shouldBe true
-    couch.availableDatabase("foo").shouldBe false
-  }
-
-}
-
-scenario "default database", {
-  then "it should set a default database", { 
-    couch.setDefaultDatabase("grouch-server-default-db")
-    couch.availableDatabase(Server.DEFAULT).shouldBe true
-  }
-}
-
 scenario "get info", {
   then "it should return something", {
-    couch.getInfo().shouldNotBe null
+    info = couch.getInfo()
+    assert (info["status"] =~ /200/)
+    info.shouldNotBe null
   }
 }
 
-scenario "show databases", {
-  given "a default database", {
-    try { HttpClient.delete("http://127.0.0.1:5984/test_98765") } catch (e) { }
-    couch.defineAvailableDatabase("test", "test_98765")
+scenario "create/delete database", {
+  given "a new database", {
+    url = "http://127.0.0.1:5984/test_98765"
+    res = HttpClient.delete(url)
+    server = new Server()
   }
 
-  then "it should include the test database", {
-    couch.allDatabases().shouldHave "test_98765"
+  then "it should create the database", {
+    db = server.createDatabase("test_98765")
+    db.shouldNotBe null
+    db.name.shouldBe "test_98765"
+  }
+
+  then "it should exist", {
+    db.exists().shouldBe true
+  }
+
+  then "it should return the same db name on multiple calls", {
+    db2 = server.createDatabase("test_98765")
+    db2.shouldNotBe null
+    db2.name.shouldBe "test_98765"
+  }
+
+  when "database is deleted", {
+    server.deleteDatabase("test_98765")  
+  }
+
+  then "it should no longer exist", {
+    db.exists().shouldBe false
   }
 }
