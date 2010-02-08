@@ -49,6 +49,18 @@ class Design extends Document {
     def getName() {
         if (id)
             id.replace('_design/', '')
-    }    
+    }
+
+    def makeBasicView(attribute) {
+        def mapFunction = {"""
+          function(doc) {
+            if (doc.${attribute})
+              emit(doc.${attribute}, null);
+          }"""
+        }
+                
+        def views = get("views")
+        views["by_${attribute}"] = ["map" : mapFunction()]
+    }
 	
 }
