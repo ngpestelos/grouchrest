@@ -63,4 +63,8 @@ scenario "has view", {
   then "it should return true", {
     assert (design.hasView("by_name") == true)
   }
+
+  then "it should return false", {
+    assert (design.hasView("") == false)
+  }
 }
