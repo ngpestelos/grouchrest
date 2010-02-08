@@ -4,9 +4,6 @@ import org.apache.commons.codec.net.URLCodec
 import org.apache.commons.lang.time.StopWatch
 import org.apache.http.client.HttpResponseException
 
-//import org.json.JSONArray
-//import org.json.JSONObject
-
 import grouchrest.json.*
 
 class Database {
