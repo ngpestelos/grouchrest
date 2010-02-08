@@ -28,6 +28,10 @@ class JSONArray {
 
     def list    
 
+    def JSONArray(Collection collection) throws JSONException {
+        list = (collection == null) ? [] : new ArrayList(collection)        
+    }
+
     def JSONArray(String json) throws JSONException {
         this(new JSONTokener(json))
     }
@@ -87,8 +91,49 @@ class JSONArray {
         return list.size()
     }
 
+    int length() {
+        return size()
+    }    
+
+    /**
+     * Make a JSON text of this JSONArray. For compactness, no
+     * unnecessary whitespace is added. If it is not possible to produce a
+     * syntactically correct JSON text then null will be returned instead. This
+     * could occur if the array contains an invalid number.
+     * <p>
+     * Warning: This method assumes that the data structure is acyclical.
+     *
+     * @return a printable, displayable, transmittable
+     *  representation of the array.
+     */
     String toString() {
-        getInternalList().toString()
+        try {
+            return "[" + join(",") + "]"
+        } catch (Exception e) {
+            return null
+        }
+    }
+
+    /**
+     * Make a string from the contents of this JSONArray. The
+     * <code>separator</code> string is inserted between each element.
+     * Warning: This method assumes that the data structure is acyclical.
+     * @param separator A string that will be inserted between the elements.
+     * @return a string.
+     * @throws JSONException If the array contains an invalid number.
+     */
+    String join(String separator) throws JSONException {
+        int len = length()
+        def sb = new StringBuffer()
+
+        for (int i = 0; i < len; i++) {
+            if (i > 0)
+                sb.append(separator)
+
+            sb.append(JSONObject.valueToString(list[i]))
+        }
+
+        return sb.toString()
     }
 	
 }
