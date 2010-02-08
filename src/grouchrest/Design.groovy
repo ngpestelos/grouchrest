@@ -65,5 +65,9 @@ class Design extends Document {
     def getViewNames() {
         get("views").keySet()
     }
+
+    def hasView(name) {
+        name in getViewNames()
+    }
 	
 }

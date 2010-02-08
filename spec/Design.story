@@ -58,3 +58,9 @@ scenario "get view names", {
     assert (design.getViewNames().size() == 2)
   }
 }
+
+scenario "has view", {
+  then "it should return true", {
+    assert (design.hasView("by_name") == true)
+  }
+}
