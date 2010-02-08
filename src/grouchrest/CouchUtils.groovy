@@ -1,16 +1,16 @@
 package grouchrest
 
 import org.apache.commons.codec.net.URLCodec
-
-import org.json.JSONArray
-import org.json.JSONObject
 import org.codehaus.groovy.runtime.GStringImpl
+
+import grouchrest.json.*
 
 // See couchrest.rb
 class CouchUtils {
 
     private static def codec = new URLCodec()
 
+    /*
     static def getJSONObject(o) {
         if (o instanceof Map) {
             def json = new JSONObject()
@@ -23,15 +23,31 @@ class CouchUtils {
         }
 
         return JSONObject.null
-    }
-
+    }*/
+    
     static def getMap(String jsonObject) {
         getMap(new JSONObject(jsonObject))
     }
 
+    static def getMap(JSONObject jsonObject) {
+        def map = [:]
+
+        jsonObject.getInternalMap().each { k, v ->
+            if (v instanceof JSONObject)
+                map[k] = getMap(v)
+            else if (v instanceof JSONArray)
+                map[k] = getList(v)
+            else
+                map[k] = v
+        }
+
+        return map
+    }
+
+    /*
     static def getList(String jsonArray) {
         getList(new JSONArray(jsonArray))
-    }
+    }*/
 
     // see CouchRest
     static def paramifyURL(url, params = [:]) {
@@ -73,7 +89,8 @@ class CouchUtils {
         return array
     }    
 
-    private static def getMap(JSONObject json) {
+    /*
+    static def getMap(JSONObject json) {
         //println "getMap ${json}"
 
         def map = [:]
@@ -91,7 +108,7 @@ class CouchUtils {
         //println "returning ${map}"
 
         return map
-    }    
+    }*/
 
     private static def getList(JSONArray json) {
         if (json.length() == 0)
@@ -100,7 +117,7 @@ class CouchUtils {
         def list = []
 
         0.upto(json.length() - 1) {
-            def element = json.get(it)
+            def element = json.getInternalList()[it]
 
             //println "processing ${element}"
             
