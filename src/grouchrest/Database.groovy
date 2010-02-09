@@ -116,8 +116,7 @@ class Database {
         else
             res = HttpClient.get(uri, closure)
 
-        if (!(res["status"] =~ /200/))
-            throw new Exception(res["status"].toString())
+        validateOK(res)
 
         return getMap(res["response"])        
     }
@@ -134,8 +133,7 @@ class Database {
     def getDocuments() {
         def res = HttpClient.get("${getURI()}/_all_docs")
 
-        if (!(res["status"] =~ /200/))
-            throw new Exception(res["status"].toString())
+        validateOK(res)
 
         getMap(res["response"])
     }
@@ -146,8 +144,7 @@ class Database {
 
         def res = HttpClient.delete("${getURI()}/${doc["_id"]}?rev=${doc["_rev"]}")
 
-        if (!(res["status"] =~ /200/))
-            throw new Exception(res["status"].toString())
+        validateOK(res)
         
         getMap(res["response"])
     }
@@ -173,6 +170,11 @@ class Database {
         def res = HttpClient.get(uri)
         def json = res["response"]
         json.get("uuids")
+    }
+
+    private def validateOK(res) {
+        if (!(res["status"] =~ /200/))
+            throw new Exception(res["status"].toString())
     }
 	
 }
