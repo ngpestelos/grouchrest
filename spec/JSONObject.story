@@ -23,6 +23,30 @@ scenario "basic values", {
     
     try { json.get("key") } catch (e) { e.printStackTrace() }
   }
+
+  then "it should accept zero", {
+    json = new JSONObject("{\"price\" : 0}")
+    json.get("price").shouldBe 0
+  }
+}
+
+scenario "to string", {
+  then "it should print zero", {
+    json = new JSONObject("{\"price\" : 0}")
+    json.toString().shouldBe '{"price":0}'
+  }
+  then "it should print negative", {
+    json = new JSONObject("{\"temp\" : -14}")
+    json.toString().shouldBe '{"temp":-14}'
+  }
+  then "it should strip trailing zeros", {
+    json = new JSONObject("{\"price\" : 0.0}")
+    json.toString().shouldBe '{"price":0}'
+  }
+  then "it should print positive", {
+    json = new JSONObject("{\"temp\" : 14}")
+    json.toString().shouldBe '{"temp":14}'
+  }
 }
 
 scenario "pairs", {
