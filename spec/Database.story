@@ -327,6 +327,26 @@ scenario "DELETE existing document", {
   }
 }
 
+scenario "DELETE Document object", {
+  given "a property list", {
+    doc = new Document()
+    doc.useDatabase(db)
+    doc.put("lemons", "from texas")
+    doc.put("and", "spain")
+    doc.put("_id", "abcde")
+    doc.save()
+  }
+
+  when "the document gets deleted", {
+    db.deleteDoc(doc)
+  }
+
+  then "it should be gone", {
+    ensureThrows(Exception) { db.get("abcde") }
+  }
+
+
+}
 scenario "cached bulk save", {
   then "it stores documents in a database-specific cache", {
     td = ["_id" : "btd1", "val" : "test"]

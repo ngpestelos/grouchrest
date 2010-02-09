@@ -140,7 +140,10 @@ class Database {
         getMap(res["response"])
     }
 
-    def deleteDoc(Map doc) {
+    def deleteDoc(doc) {
+        if (doc instanceof Document)
+            doc = doc.getAttributes()
+
         def res = HttpClient.delete("${getURI()}/${doc["_id"]}?rev=${doc["_rev"]}")
 
         if (!(res["status"] =~ /200/))
