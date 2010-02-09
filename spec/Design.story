@@ -68,3 +68,22 @@ scenario "has view", {
     assert (design.hasView("") == false)
   }
 }
+
+scenario "db not created", {
+  given "a new database", {
+    newdb = new Server().getDatabase("newdb")
+    assert (newdb.exists() == false)
+  }
+  
+  when "a new design doc is created", {
+    newdesign = new Design(newdb, "bar")
+  }
+
+  then "it should create the database", {
+    newdb.exists().shouldBe true
+  }
+
+  after "clean up", {
+    HttpClient.delete("http://127.0.0.1:5984/newdb")
+  }
+}

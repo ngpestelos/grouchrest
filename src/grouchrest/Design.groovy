@@ -11,6 +11,15 @@ package grouchrest
  */
 class Design extends Document {
 
+    /**
+     * Creates a new Design Document operating on a database
+     *
+     * In case the database is not yet setup, this triggers database creation
+     *
+     * @param db - target database
+     * @param name - document name (_design/<name>)
+     *
+     */
     def Design(Database db, String name) {        
         try {
             def _design = db.get("_design/${name}")
@@ -18,6 +27,9 @@ class Design extends Document {
         } catch (e) { }
 
         useDatabase(db)
+
+        if (!db.exists())
+            new Server().createDatabase(db.getName())
 
         if (!id)
             put("_id", "_design/${name}")
