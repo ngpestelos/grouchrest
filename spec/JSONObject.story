@@ -65,10 +65,11 @@ scenario "basic lists", {
 
 scenario "callback", {
   then "it should call the callback only once", {
-    invoked = 0
-    cb = { invoked += 1 }
+    x = null 
+    cb = { x = it }
     json = new JSONObject("{\"key\" : 1}", cb)
-    invoked.shouldBe 1
+    assert(x.size() == 1)
+    x.get("key").shouldBe 1
   }
 }
 
