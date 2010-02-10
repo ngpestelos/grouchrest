@@ -46,13 +46,11 @@ class JSONObject extends PropertyList {
 
         def callback = { }
         if (closure)
-            callback = { try { closure(delegate) } catch (e) { } }
+            callback = { try { closure(getAttributes()) } catch (e) { } }
 
         if (x.nextClean() != '{') {
             throw x.syntaxError("A JSONObject text must begin with '{'")
-        }
-
-        // TODO where to call the closure?
+        }        
 
         for(;;) {
 
@@ -61,7 +59,7 @@ class JSONObject extends PropertyList {
             switch (c) {
                 case 0:
                     throw x.syntaxError("A JSONObject text must end with '}'")
-                case '}':
+                case '}':                    
                     callback()
                     return
                 default:

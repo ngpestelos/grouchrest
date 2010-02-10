@@ -1,5 +1,7 @@
 package grouchrest.json;
 
+import groovy.lang.Closure;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -42,18 +44,19 @@ public class JSONTokener {
     private Reader reader;
     private char lastChar;
     private boolean useLastChar;
-
+    private Closure closure;
 
     /**
      * Construct a JSONTokener from a string.
      *
      * @param reader     A reader.
      */
-    public JSONTokener(Reader reader) {
+    public JSONTokener(Reader reader, Closure closure) {
         this.reader = reader.markSupported() ? 
         		reader : new BufferedReader(reader);
         this.useLastChar = false;
         this.index = 0;
+        this.closure = closure;
     }
 
 
@@ -62,8 +65,8 @@ public class JSONTokener {
      *
      * @param s     A source string.
      */
-    public JSONTokener(String s) {
-        this(new StringReader(s));
+    public JSONTokener(String s, Closure closure) {
+        this(new StringReader(s), closure);
     }
 
 
@@ -344,7 +347,7 @@ public class JSONTokener {
                 return nextString(c);
             case '{':
                 back();
-                return new JSONObject(this);
+                return new JSONObject(this, closure);                
             case '[':
             case '(':
                 back();

@@ -103,6 +103,8 @@ class Database {
     }
 
     Map view(name, params = [:], closure = null) {
+        //println "view ${name} ${params} ${closure?.getClass()}"
+
         def keys = params.remove("keys")
 
         name = name.split("/")

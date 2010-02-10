@@ -18,10 +18,12 @@ import grouchrest.json.*
 class HttpClient {    
 
     static def get(uri, closure = null) {
+        //println "get ${uri} ${closure}"
+
         request(new HttpGet(uri), closure)        
     }
 
-    static def put(uri, closure = null) {        
+    static def put(uri, closure = null) { 
         request(new HttpPut(uri), closure)
     }
 
@@ -77,7 +79,7 @@ class HttpClient {
                 def reader = new BufferedReader(new InputStreamReader(stream))
                 return [
                     "status" : response.getStatusLine(),
-                    "response" : new JSONObject(new JSONTokener(reader), closure)
+                    "response" : new JSONObject(new JSONTokener(reader, closure), closure)
                 ]
                 
             } catch (IOException e) {
