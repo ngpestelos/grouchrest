@@ -36,7 +36,7 @@ class JSONObject extends PropertyList {
     }
 
     def JSONObject(String json, closure = null) throws JSONException {
-        this(new JSONTokener(json), closure)
+        this(new JSONTokener(json, closure), closure)
     }
 
     def JSONObject(JSONTokener x, closure = null) throws JSONException {
