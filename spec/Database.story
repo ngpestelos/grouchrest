@@ -409,3 +409,28 @@ scenario "flush the bulk save cache", {
     db.bulkSaveCache.size().shouldBe 0
   }
 }
+
+scenario "bulk delete", {
+  given "a bulk limit of two", {
+    db.BULK_LIMIT = 2
+  }
+
+  given "two documents saved", {
+    td1 = ["_id" : "td1", "val" : true]
+    td2 = ["_id" : "td2", "val" : 4]
+    db.save(td1, true)
+    db.save(td2, true)
+  }
+
+  when "both documents deleted", {
+    doc1 = db.get("td1")
+    doc2 = db.get("td2")
+    db.deleteDoc(doc1, true)
+    db.deleteDoc(doc2, true) 
+  }
+
+  then "both docs should be gone", {
+    ensureThrows(Exception) { db.get("td1") }
+    ensureThrows(Exception) { db.get("td2") }
+  }
+}
