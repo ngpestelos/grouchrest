@@ -140,15 +140,23 @@ class Database {
         getMap(res["response"])
     }
 
-    def deleteDoc(doc) {
+    // TODO Retest for _id and _rev cases
+    // TODO Retest bulk save
+    def deleteDoc(doc, bulk = false) {
         if (doc instanceof Document)
             doc = doc.getAttributes()
 
-        def res = HttpClient.delete("${getURI()}/${doc["_id"]}?rev=${doc["_rev"]}")
-
-        validateOK(res)
-        
-        getMap(res["response"])
+        if (bulk) {
+          bulkSaveCache << ["_id" : doc['_id'], "_rev" : doc["_rev"], "_deleted" : true]
+          if (bulkSaveCache.size() >= BULK_LIMIT) {
+            bulkSave()
+          }
+          return ["ok" : true]
+        } else {
+          def res = HttpClient.delete("${getURI()}/${doc["_id"]}?rev=${doc["_rev"]}")
+          validateOK(res)
+          getMap(res["response"])
+        }
     }
 
     def exists() {
