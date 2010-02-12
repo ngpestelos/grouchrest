@@ -33,7 +33,7 @@ class JSONArray {
     }
 
     def JSONArray(String json) throws JSONException {
-        this(new JSONTokener(json))
+        this(new JSONTokener(json, null))
     }
 
     def JSONArray(JSONTokener x) throws JSONException {
