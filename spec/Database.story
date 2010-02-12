@@ -434,3 +434,14 @@ scenario "bulk delete", {
     ensureThrows(Exception) { db.get("td2") }
   }
 }
+
+scenario "database exists", {
+  then "it should see the test database", {
+    db.exists().shouldBe true
+  }
+
+  then "test_blah database should not exist", {
+    blah = server.getDatabase("test_blah")
+    blah.exists().shouldBe false
+  }
+}
