@@ -344,9 +344,8 @@ scenario "DELETE Document object", {
   then "it should be gone", {
     ensureThrows(Exception) { db.get("abcde") }
   }
-
-
 }
+
 scenario "cached bulk save", {
   then "it stores documents in a database-specific cache", {
     td = ["_id" : "btd1", "val" : "test"]
@@ -385,5 +384,28 @@ scenario "cached bulk save", {
     db.get(td1["_id"])["val"].shouldBe td1["val"]
     db.get(td2["_id"])["val"].shouldBe td2["val"]
     db.get(td3["_id"])["val"].shouldBe td3["val"]
+  }
+}
+
+scenario "flush the bulk save cache", {
+  given "a bulk limit of three", {
+    db.BULK_LIMIT = 3
+    assert (db.bulkSaveCache.size() == 0)
+  }
+
+  given "two documents are saved in bulk", {
+    td1 = ["_id" : "td1", "val" : true]
+    td2 = ["_id" : "td2", "val" : 4]
+    db.save(td1, true)
+    db.save(td2, true)
+  }
+
+  when "a third document is saved", {
+    td3 = ["_id" : "td3", "val" : "last"]
+    db.save(td3, true)
+  }
+
+  then "it should trigger the flush", {
+    db.bulkSaveCache.size().shouldBe 0
   }
 }
