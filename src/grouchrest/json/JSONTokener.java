@@ -50,6 +50,7 @@ public class JSONTokener {
      * Construct a JSONTokener from a string.
      *
      * @param reader     A reader.
+     * @param closure    A block of code passed to a JSONObject
      */
     public JSONTokener(Reader reader, Closure closure) {
         this.reader = reader.markSupported() ? 
@@ -127,7 +128,7 @@ public class JSONTokener {
      */
     public char next() throws JSONException {
         if (this.useLastChar) {
-        	this.useLastChar = false;
+            this.useLastChar = false;
             if (this.lastChar != 0) {
             	this.index += 1;
             }
@@ -141,7 +142,7 @@ public class JSONTokener {
         }
 
         if (c <= 0) { // End of stream
-        	this.lastChar = 0;
+            this.lastChar = 0;
             return 0;
         } 
     	this.index += 1;
