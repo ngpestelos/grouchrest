@@ -2,50 +2,73 @@ import grouchrest.json.*
 
 scenario "null literal", {
   then "it should return null objects", {
-    json = new JSONObject(new JSONTokener("{\"null\": \"null\"}"))
+    input = "{\"null\": \"null\"}"
+    json = new JSONObject(input)
     json.size().shouldBe 1 // [null : null]
   }
 }
 
 scenario "basic values", {
   then "it should return an Integer", {
-    json = new JSONObject("{\"key\" : 1}")
+    input = "{\"key\" : 1}"
+    json = new JSONObject(input)
     json.get("key").shouldBe 1
   }
 
   then "it should return a Double", {
-    json = new JSONObject("{\"key\" : 1.0}")
+    input = "{\"key\" : 1.0}"
+    json = new JSONObject(input)
     json.get("key").shouldBe 1.0
   }
 
   then "it should return a String", {
-    json = new JSONObject("{\"key\" : \"foo\"}")
-    
-    try { json.get("key") } catch (e) { e.printStackTrace() }
+    input = "{\"key\" : \"foo\"}"
+    json = new JSONObject(input)
+    json.get("key").shouldBe "foo"
   }
 
   then "it should accept zero", {
-    json = new JSONObject("{\"price\" : 0}")
+    input = "{\"price\" : 0}"
+    json = new JSONObject(input)
     json.get("price").shouldBe 0
   }
 }
 
 scenario "to string", {
   then "it should print zero", {
-    json = new JSONObject("{\"price\" : 0}")
-    json.toString().shouldBe '{"price":0}'
+    input = "{\"price\":0}"
+    json = new JSONObject(input)
+    json.toString().shouldBe input 
   }
+
   then "it should print negative", {
-    json = new JSONObject("{\"temp\" : -14}")
-    json.toString().shouldBe '{"temp":-14}'
+    input = "{\"temp\":-14}"
+    json = new JSONObject(input)
+    json.toString().shouldBe input 
   }
+
   then "it should strip trailing zeros", {
-    json = new JSONObject("{\"price\" : 0.0}")
-    json.toString().shouldBe '{"price":0}'
+    input = "{\"price\":0.0}"
+    json = new JSONObject(input)
+    json.toString().shouldBe "{\"price\":0}"
   }
+
+  then "it should print decimal values", {
+    input = "{\"price\":3.5}"
+    json = new JSONObject(input)
+    json.toString().shouldBe input
+  }
+
   then "it should print positive", {
-    json = new JSONObject("{\"temp\" : 14}")
-    json.toString().shouldBe '{"temp":14}'
+    input = "{\"temp\":14}"
+    json = new JSONObject(input)
+    json.toString().shouldBe input 
+  }
+
+  then "it should print quoted strings", {
+    input = "{\"name\":\"foo\"}"
+    json = new JSONObject(input)
+    json.toString().shouldBe input
   }
 }
 
@@ -53,6 +76,8 @@ scenario "pairs", {
   then "it should get two values", {
     json = new JSONObject("{\"foo\" : 1, \"bar\" : 2}")
     json.size().shouldBe 2
+    json.get("foo").shouldBe 1
+    json.get("bar").shouldBe 2
   }  
 }
 
@@ -63,13 +88,13 @@ scenario "basic lists", {
   }
 }
 
-scenario "callback", {
-  then "it should call the callback only once", {
-    x = null 
-    cb = { x = it }
-    json = new JSONObject("{\"key\" : 1}", cb)
-    assert(x.size() == 1)
-    x.get("key").shouldBe 1
+scenario "closure", {
+  then "it should call the closure", {
+    foo = null
+    closure = { foo = it }
+    input = "{\"key\" : 1}"
+    json = new JSONObject(input, closure)
+    foo.get("key").shouldBe 1
   }
 }
 
@@ -77,5 +102,14 @@ scenario "takes a map", {
   then "it should create a JSONObject", {
     json = new JSONObject(["key" : 1])
     json.get("key").shouldBe 1
+  }
+}
+
+scenario "map with closure", {
+  then "it should call the closure", {
+    foo = null
+    closure = { foo = it }
+    json = new JSONObject(["key" : 1], closure)
+    foo.get("key").shouldBe 1
   }
 }

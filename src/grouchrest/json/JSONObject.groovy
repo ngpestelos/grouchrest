@@ -33,6 +33,12 @@ class JSONObject extends PropertyList {
 
     def JSONObject(Map map, closure = null) {
         super(map)
+
+        def callback = { }
+        if (closure)
+            callback = { try { closure(getAttributes()) } catch (e) { } }
+
+        callback()
     }
 
     def JSONObject(String json, closure = null) throws JSONException {
