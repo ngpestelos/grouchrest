@@ -1,32 +1,61 @@
 import grouchrest.*
 
-before "setup database", {
+class MyDesign extends Design {
+  def MyDesign(Database db, String name) {
+    super(db, name)
+  }
+
+  def refresh() {
+    def map = "function(doc) { if (doc.code) emit(doc.code, null); }"
+
+    clearViews()
+    putView("by_code", ["map" : map])
+  }
+}
+
+scenario "database does not exist", {
+  given "an unknown database", {
+    try { HttpClient.delete("http://127.0.0.1:5984/nulldb") } catch (e) { }
+    db = new Server().getDatabase("nulldb")
+    assert (db.exists() == false)
+  }
+
+  when "design doc is created", {
+    design = new MyDesign(db, "foo")
+  }
+
+  then "it should have an _id", {
+    design.get("_id").shouldBe "_design/foo"
+  }
+
+  then "it should trigger database creation", {
+    db.exists().shouldBe true
+  } 
+
+  then "it should have a view", {
+    design.get("views").size().shouldBe 1
+  }
+}
+
+before_each "clean up", {
   TESTDB = "test_39579"
   HttpClient.delete("http://127.0.0.1:5984/${TESTDB}")
   HttpClient.put("http://127.0.0.1:5984/${TESTDB}")
   db = new Server().getDatabase(TESTDB)
-  design = new Design(db, "foo")
-}
-
-
-scenario "new design doc", {
-  given "a new design doc", {
-    assert (design.get("_id") == "_design/foo")
-  }
+  design = new MyDesign(db, "foo")
 }
 
 scenario "view something", {
-  given "a view", {
-    design.makeBasicView("name")
-    design.save()
-  } 
+  given "a design doc", {
+    assert (design.get("_id") == "_design/foo")
+  }
 
   given "a document", {
-    db.save("name" : "Nesingwary 4000")
+    db.save("code" : "12345")
   }
 
   then "it should see the document", {
-    res = design.view("by_name")
+    res = design.view("by_code")
     assert (res["total_rows"] == 1)
   }
 }
@@ -38,8 +67,8 @@ scenario "unknown view", {
 }
 
 scenario "add a view", {
-  given "another view", {
-    design.makeBasicView("code")
+  when "another view is added", {
+    design.putBasicView("some_property")
     design.save()
   }
 
@@ -48,42 +77,21 @@ scenario "add a view", {
   }
 
   then "it should be accessible", {
-    res = design.view("by_code")
+    res = design.view("by_some_property")
     assert (res["total_rows"] == 0)
-  }  
-}
+  }
 
-scenario "get view names", {
   then "it should return 2 views", {
     assert (design.getViewNames().size() == 2)
-  }
+  }  
 }
 
 scenario "has view", {
   then "it should return true", {
-    assert (design.hasView("by_name") == true)
+    assert (design.hasView("by_code") == true)
   }
 
   then "it should return false", {
     assert (design.hasView("") == false)
-  }
-}
-
-scenario "db not created", {
-  given "a new database", {
-    newdb = new Server().getDatabase("newdb")
-    assert (newdb.exists() == false)
-  }
-  
-  when "a new design doc is created", {
-    newdesign = new Design(newdb, "bar")
-  }
-
-  then "it should create the database", {
-    newdb.exists().shouldBe true
-  }
-
-  after "clean up", {
-    HttpClient.delete("http://127.0.0.1:5984/newdb")
   }
 }

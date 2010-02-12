@@ -9,36 +9,56 @@ package grouchrest
  *
  * 
  */
-class Design extends Document {
+abstract class Design extends Document {
 
     /**
      * Creates a new Design Document operating on a database
      *
      * In case the database is not yet setup, this triggers database creation
      *
+     * Load existing views if the design document is already created
+     *
      * @param db - target database
      * @param name - document name (_design/<name>)
      *
      */
-    def Design(Database db, String name) {        
-        try {
-            def _design = db.get("_design/${name}")
-            _design.each { k, v -> put(k, v) }
-        } catch (e) { }
-
+    protected def Design(Database db, String name) {
         useDatabase(db)
 
         if (!db.exists())
             new Server().createDatabase(db.getName())
 
-        if (!id)
-            put("_id", "_design/${name}")
+        try {
+            def des = db.get("_design/${name}")
+            des.each { k, v -> put(k, v) }
+            return
+        } catch (e) { }
 
-        if (!has("language"))
-            put("language", "javascript")
+        initializeDesign(name)        
+    }
 
+    // Replaces the views property with an empty Map
+    protected def clearViews() {
+        remove("views")
+        put("views", [:])
+    }
+    
+    protected def putView(String name, Map view) {
         if (!has("views"))
             put("views", [:])
+
+        get("views")[name] = view
+    }
+
+    protected def putBasicView(attribute) {
+        def mapFunction = {"""
+          function(doc) {
+            if (doc.${attribute})
+              emit(doc.${attribute}, null);
+          }"""
+        }        
+
+        putView("by_${attribute}", ["map" : mapFunction()])
     }
 
     /**
@@ -60,19 +80,7 @@ class Design extends Document {
     def getName() {
         if (id)
             id.replace('_design/', '')
-    }
-
-    def makeBasicView(attribute) {
-        def mapFunction = {"""
-          function(doc) {
-            if (doc.${attribute})
-              emit(doc.${attribute}, null);
-          }"""
-        }
-                
-        def views = get("views")
-        views["by_${attribute}"] = ["map" : mapFunction()]
-    }
+    }    
 
     def getViewNames() {
         get("views").keySet()
@@ -80,6 +88,34 @@ class Design extends Document {
 
     def hasView(name) {
         name in getViewNames()
+    }
+
+    /**
+     * Rebuilds the design document's view map
+     */
+    abstract def refresh();
+
+    ////
+    //// Private
+    ////
+
+    private def initializeDesign(name) {
+        def db = super.database
+        
+        if (!db.exists())
+            new Server().createDatabase(db.getName())
+
+        if (!id)
+            put("_id", "_design/${name}")
+
+        if (!has("language"))
+            put("language", "javascript")
+
+        if (!has("views"))
+            put("views", [:])
+
+        refresh()
+        save()
     }
 	
 }
